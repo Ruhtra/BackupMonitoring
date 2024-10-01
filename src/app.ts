@@ -1,10 +1,8 @@
 import express from "express";
 import cors from "cors";
-import cron from "node-cron"; // Import the node-cron package
 import { router } from "./router";
-import { Gbak } from "./Utils/MakeBackup";
-import path from "path";
-import { FileSender } from "./Utils/SendFiles";
+import { LocalBackup } from "./Logic/LocalBackup";
+import { RegService } from "./Service/RegService";
 
 const app = express();
 
@@ -16,43 +14,55 @@ app.use(
   })
 );
 
-const sourceDB = path.join("C:", "Dados");
-const backupDB = path.join("C:", "bkp");
-const sender = new FileSender(
-  backupDB,
-  "C:/BackupAntonio",
-  "n3",
-  "187.19.216.31",
-  "2890"
-);
+// SSE clients array
+const clients = [];
 
-const gbak = new Gbak(sourceDB, backupDB);
+// Function to send a message to all connected clients
+async function sendToClients() {
+  const registros = await db.getAll(); // Obtém todos os registros do banco de dados
+  clients.forEach((res) => {
+    const data = JSON.stringify(registros);
+    res.write(`data: ${data}\n\n`);
+  });
+}
 
-// Schedule the backup to run every day at 8 AM
-cron.schedule("* 8 * * *", async () => {
-  try {
-    console.log("Iniciando o backup diário...");
+// function sendToClients(message) {
+//   clients.forEach((res) => {
+//     res.write(`data: ${message}\n\n`);
+//   });
+// }
 
-    // Execute backup
-    await gbak.makeBackup(["TESTE"]);
+const db = new RegService();
 
-    // Send files after backup
-    await sender.sendFiles();
+// SSE endpoint
+app.get("/events", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
 
-    console.log("Backup e envio de arquivos concluídos com sucesso.");
-  } catch (error) {
-    console.error(`Erro durante o backup: ${error.message}`);
-  }
+  // Add the client to the clients array
+  clients.push(res);
+
+  const registros = await db.getAll(); // Obtém todos os registros do banco de dados
+  const data = JSON.stringify(registros);
+
+  // Envia os dados como um evento
+  res.write(`data: ${data}\n\n`);
+
+  // Remove the client when connection closes
+  req.on("close", () => {
+    const index = clients.indexOf(res);
+    if (index !== -1) {
+      clients.splice(index, 1);
+    }
+  });
 });
+
+new LocalBackup(sendToClients, db);
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api", router);
-
-// Example route
-// app.get("/", (req, res) => {
-//   res.send("Home Page");
-// });
+app.use("/", router);
 
 export { app };

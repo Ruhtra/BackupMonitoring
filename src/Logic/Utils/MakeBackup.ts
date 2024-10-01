@@ -1,6 +1,7 @@
 import path from "path";
 import { exec } from "child_process";
 import fs from "fs";
+import { IRegService } from "../../Service/Interfaces/IRegService";
 
 export class Gbak {
   firebirdPath: string;

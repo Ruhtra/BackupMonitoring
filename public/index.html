@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Estilo básico para a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monitor de Backup</h1>
+    <div id="status"></div>
+    <table id="registros">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Data e Hora de Criação</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os registros serão adicionados aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        const eventSource = new EventSource("/events");
+
+        eventSource.onmessage = function(event) {
+            const registros = JSON.parse(event.data); // Faz o parsing dos dados recebidos
+            const tbody = document.getElementById("registros").querySelector("tbody");
+            tbody.innerHTML = ""; // Limpa a tabela antes de adicionar novos registros
+
+            // Adiciona cada registro à tabela
+            registros.forEach(registro => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${registro.id}</td>
+                    <td>${registro.name}</td>
+                    <td>${registro.createdAt}</td>
+                    <td>${registro.status}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
+
+        eventSource.onerror = function(err) {
+            console.error("EventSource falhou: ", err);
+        };
+    </script>
+</body>
+</html>
