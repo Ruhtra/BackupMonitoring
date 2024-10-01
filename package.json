@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node --env-file=.env ./dist/server.js",
-    "dev": "tsx watch --env-file=.env src/server.ts"
+    "dev": "tsx watch --env-file=.env src/index.ts"
   },
   "keywords": [],
   "author": "",
