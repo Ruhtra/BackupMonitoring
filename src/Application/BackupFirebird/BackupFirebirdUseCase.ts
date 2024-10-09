@@ -18,6 +18,8 @@ const sender = new FileSender(
 );
 const gbak = new Gbak(sourceDB, backupDB);
 
+const dbs = ["TESTE", "TESTE2"];
+
 export class BackupFirebirdUseCase
   implements IUseCase<BackupFirebirdInputDto, void>
 {
@@ -25,25 +27,43 @@ export class BackupFirebirdUseCase
 
   async exeute({ cb }: BackupFirebirdInputDto): Promise<void> {
     // Schedule the backup to run every day at 8 AM
-    cron.schedule("15 14 * * *", async () => {
-      const reg = RegEntity.create({
-        status: "progress",
+    cron.schedule("17 14 * * *", async () => {
+      const regs: RegEntity[] = dbs.map((e) => {
+        return RegEntity.create({
+          status: "progress",
+          dbName: e,
+        });
       });
-
       try {
-        await this.regRepository.save(reg);
+        await Promise.all(
+          regs.map(async (reg) => await this.regRepository.save(reg))
+        );
         await cb(); // Notify clients
 
-        await gbak.makeBackup(["TESTE"]);
-        await sender.sendFiles();
+        function onSuccess(dbName: string) {
+          const reg = regs.find((reg) => reg.dbName == dbName);
+          reg.update({ status: "successs" });
+          cb(); // Notify clients
+        }
+        function onFail(dbName: string) {
+          const reg = regs.find((reg) => reg.dbName == dbName);
+          reg.update({ status: "error" });
+          cb(); // Notify clients
+        }
 
-        console.log("Backup e envio de arquivos concluídos com sucesso.");
-        reg.update({ status: "successs" });
+        await gbak.makeBackup(dbs, {
+          onSuccess,
+          onFail,
+        });
+        await sender.sendFiles();
       } catch (error) {
         console.error(`Erro durante o backup: ${error.message}`);
-        reg.update({ status: "error" });
       } finally {
-        await this.regRepository.update(reg);
+        await Promise.all(
+          regs.map(async (reg) => {
+            await this.regRepository.update(reg);
+          })
+        );
         await cb(); // Notify clients
       }
     });

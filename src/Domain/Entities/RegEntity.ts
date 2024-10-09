@@ -2,11 +2,12 @@ import { randomUUID } from "crypto";
 
 export type RegProps = {
   id: string;
+  dbName: string;
   status: "progress" | "successs" | "error";
   createdAt: Date;
 };
 
-export type RegCreateProps = Pick<RegProps, "status">;
+export type RegCreateProps = Pick<RegProps, "status" | "dbName">;
 export type RegUpdateProps = Pick<RegProps, "status">;
 
 export class RegEntity {
@@ -18,6 +19,7 @@ export class RegEntity {
   static create(props: RegCreateProps) {
     return new RegEntity({
       createdAt: new Date(),
+      dbName: props.dbName,
       id: randomUUID(),
       status: props.status,
     });
@@ -37,5 +39,8 @@ export class RegEntity {
 
   public get createdAt(): Date {
     return this.props.createdAt;
+  }
+  public get dbName(): string {
+    return this.props.dbName;
   }
 }

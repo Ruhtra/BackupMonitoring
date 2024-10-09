@@ -71,29 +71,43 @@ export class Gbak {
   }
 
   // Método para fazer o backup sem porcentagem
-  async makeBackup(databaseNames: string[]) {
+  async makeBackup(
+    databaseNames: string[],
+    {
+      onSuccess,
+      onFail,
+    }: {
+      onSuccess: (bd: string) => void;
+      onFail: (bd: string) => void;
+    }
+  ) {
     try {
       // Verifica se todos os arquivos de banco de dados existem
+
       this.verifyDatabaseFiles(databaseNames);
 
       const commands = databaseNames.map((dbName) => {
         const outputFilePath = this.generateUniqueOutputFileName(dbName);
         const inputFielPath = this.generateDatabaseDir(dbName);
-        return `"${this.firebirdPath}" -B -b -v -user SYSDBA -password masterkey "${inputFielPath}" "${outputFilePath}"`;
+        return `"${this.firebirdPath}" -B -b -v -y "${outputFilePath}.txt" -user SYSDBA -password masterkey "${inputFielPath}" "${outputFilePath}"`;
       });
 
       const commandPromises = commands.map(async (command, index) => {
+        const dbName = databaseNames[index];
+        console.log(command);
+
         return new Promise((resolve) => {
           const backupProcess = exec(command);
 
           backupProcess.stdout?.on("data", (data) => {
-            // console.log(`Backup para ${databaseNames[index]}: ${data}`);
+            console.log(`Backup para ${databaseNames[index]}: ${data}`);
           });
 
           backupProcess.stderr?.on("data", (data) => {
             console.error(
               `Erro ao fazer backup de ${databaseNames[index]}: ${data}`
             );
+            onFail(dbName);
           });
 
           backupProcess.on("close", (code) => {
@@ -101,10 +115,12 @@ export class Gbak {
               console.log(
                 `Backup de ${databaseNames[index]} concluído com sucesso!`
               );
+              onSuccess(dbName);
             } else {
               console.error(
                 `Processo de backup de ${databaseNames[index]} falhou com código ${code}`
               );
+              onFail(dbName);
             }
             resolve(code);
           });

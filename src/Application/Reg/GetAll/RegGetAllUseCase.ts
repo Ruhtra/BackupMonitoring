@@ -10,6 +10,7 @@ export class RegGetAllUseCase implements IUseCase<void, RegGetAllOutputDto[]> {
     return repositories.map((r) => {
       return {
         id: r.id,
+        dbName: r.dbName,
         createdAt: r.createdAt,
         status: r.status,
       };
