@@ -27,10 +27,11 @@ export class BackupFirebirdUseCase
 
   async exeute({ onUpdate }: BackupFirebirdInputDto): Promise<void> {
     // Schedule the backup to run every day at 8 AM
-    cron.schedule("05 08 * * *", async () => {
+    cron.schedule("37 09 * * *", async () => {
       const regs: RegEntity[] = dbs.map((e) => {
         return RegEntity.create({
           status: "progress",
+          statusSsh: "idle",
           dbName: e,
         });
       });
@@ -45,19 +46,40 @@ export class BackupFirebirdUseCase
 
           onSuccess: async (dbName: string) => {
             const reg = regs.find((reg) => reg.dbName == dbName);
-            reg.update({ status: "successs" });
+            reg.updateStatus({ status: "successs" });
             await this.regRepository.update(reg);
             onUpdate();
           },
           onFail: async (dbName: string) => {
             const reg = regs.find((reg) => reg.dbName == dbName);
-            reg.update({ status: "error" });
+            reg.updateStatus({ status: "error" });
             await this.regRepository.update(reg);
             onUpdate();
           },
         });
 
-        await sender.sendFiles();
+        await Promise.all(
+          regs.map(async (reg) => {
+            reg.updateStatusSsh({ statusSsh: "progress" });
+            await this.regRepository.update(reg);
+          })
+        );
+        onUpdate();
+
+        await sender.sendFiles({
+          onSuccess: async (dbName) => {
+            const reg = regs.find((reg) => reg.dbName == dbName);
+            reg.updateStatusSsh({ statusSsh: "successs" });
+            await this.regRepository.update(reg);
+            onUpdate();
+          },
+          onFail: async (dbName) => {
+            const reg = regs.find((reg) => reg.dbName == dbName);
+            reg.updateStatusSsh({ statusSsh: "error" });
+            await this.regRepository.update(reg);
+            onUpdate();
+          },
+        });
       } catch (error) {
         console.error(`Erro durante o backup: ${error.message}`);
       } finally {

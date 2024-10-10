@@ -11,6 +11,7 @@ export class RegGetAllUseCase implements IUseCase<void, RegGetAllOutputDto[]> {
       return {
         id: r.id,
         dbName: r.dbName,
+        statusSsh: r.statusSsh,
         createdAt: r.createdAt,
         status: r.status,
       };

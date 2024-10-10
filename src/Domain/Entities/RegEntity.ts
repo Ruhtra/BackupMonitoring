@@ -4,11 +4,13 @@ export type RegProps = {
   id: string;
   dbName: string;
   status: "progress" | "successs" | "error";
+  statusSsh: "progress" | "successs" | "error" | "idle";
   createdAt: Date;
 };
 
-export type RegCreateProps = Pick<RegProps, "status" | "dbName">;
-export type RegUpdateProps = Pick<RegProps, "status">;
+export type RegCreateProps = Pick<RegProps, "status" | "dbName" | "statusSsh">;
+export type RegUpdateStatusProps = Pick<RegProps, "status">;
+export type RegUpdateStatusSshProps = Pick<RegProps, "statusSsh">;
 
 export class RegEntity {
   private props: RegProps;
@@ -20,21 +22,29 @@ export class RegEntity {
     return new RegEntity({
       createdAt: new Date(),
       dbName: props.dbName,
+      statusSsh: props.statusSsh,
       id: randomUUID(),
       status: props.status,
     });
   }
-  update(props: RegUpdateProps) {
+  updateStatus(props: RegUpdateStatusProps) {
     this.props.status = props.status;
+  }
+  updateStatusSsh(props: RegUpdateStatusSshProps) {
+    this.props.statusSsh = props.statusSsh;
   }
 
   public get id(): string {
     return this.props.id;
   }
 
-  //fix this typing
+  //FIX THIS TYPING
   public get status(): any {
     return this.props.status;
+  }
+  //FIX THIS TYPING
+  public get statusSsh(): any {
+    return this.props.statusSsh;
   }
 
   public get createdAt(): Date {

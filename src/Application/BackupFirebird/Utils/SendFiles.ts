@@ -25,7 +25,13 @@ export class FileSender {
     this.port = port;
   }
 
-  async sendFiles() {
+  async sendFiles({
+    onSuccess,
+    onFail,
+  }: {
+    onSuccess: (dbName: string) => void;
+    onFail: (dbName: string) => void;
+  }) {
     try {
       const files = fs.readdirSync(this.localPath);
       const gbkFiles = files.filter((file) => file.endsWith(".GBK"));
@@ -44,9 +50,13 @@ export class FileSender {
         return execAsync(command)
           .then(() => {
             console.log(`Arquivo enviado: ${file}`);
+            //REMOVER ESSA GAMBIARRA
+            onSuccess(file.split("_")[0]);
           })
           .catch((error) => {
             console.error(`Erro ao enviar ${file}: ${error.message}`);
+            //REMOVER ESSA GAMBIARRA
+            onFail(file.split("_")[0]);
           });
       });
 
