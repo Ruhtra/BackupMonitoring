@@ -27,10 +27,7 @@ export class FileSender {
 
   async sendFiles() {
     try {
-      // Lê todos os arquivos do diretório local
       const files = fs.readdirSync(this.localPath);
-
-      // Filtra arquivos que terminam com .gbk
       const gbkFiles = files.filter((file) => file.endsWith(".GBK"));
 
       if (gbkFiles.length === 0) {
@@ -38,12 +35,10 @@ export class FileSender {
         return;
       }
 
-      // Cria um array de promessas para enviar todos os arquivos
       const uploadPromises = gbkFiles.map((file) => {
         const localFilePath = path.join(this.localPath, file);
         const remoteFilePath = path.join(this.remotePath, file);
 
-        // Comando SCP para enviar o arquivo
         const command = `scp.exe -P ${this.port} "${localFilePath}" ${this.user}@${this.address}:"${remoteFilePath}"`;
 
         return execAsync(command)
@@ -55,7 +50,6 @@ export class FileSender {
           });
       });
 
-      // Aguarda todas as promessas serem concluídas
       await Promise.all(uploadPromises);
 
       console.log("Todos os arquivos foram enviados.");

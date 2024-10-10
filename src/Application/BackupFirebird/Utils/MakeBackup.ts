@@ -31,7 +31,6 @@ export class Gbak {
     );
   }
 
-  // Método para verificar se os arquivos de banco de dados existem
   verifyDatabaseFiles(databaseNames: string[]) {
     for (const dbName of databaseNames) {
       const dbPath = this.generateDatabaseDir(dbName);
@@ -40,50 +39,37 @@ export class Gbak {
       }
     }
   }
-  // Método para gerar um nome de arquivo de saída único
+
   generateUniqueOutputFileName(sourceDB: string): string {
     const firstFile = this.generateOutputDir(sourceDB, 1);
     const secondFile = this.generateOutputDir(sourceDB, 2);
 
-    // Se não existem nem o _01 nem o _02, cria apenas o _01
-    if (!fs.existsSync(firstFile) && !fs.existsSync(secondFile)) {
-      return firstFile; // Retorna o caminho para o arquivo_01.GBK
-    }
+    const isEmpty = !fs.existsSync(firstFile) && !fs.existsSync(secondFile);
+    const exist01and02 = fs.existsSync(firstFile) && fs.existsSync(secondFile);
+    const onlyExist01 = fs.existsSync(firstFile) && !fs.existsSync(secondFile);
+    const onlyExist02 = !fs.existsSync(firstFile) && fs.existsSync(secondFile);
 
-    // Se existe apenas o _01, cria o _02
-    if (fs.existsSync(firstFile) && !fs.existsSync(secondFile)) {
-      return secondFile; // Retorna o caminho para o arquivo_02.GBK
-    }
-
-    // Se existem ambos os arquivos _01 e _02
-    if (fs.existsSync(firstFile) && fs.existsSync(secondFile)) {
-      // Deleta o _01
+    if (isEmpty) return firstFile;
+    if (onlyExist01) return secondFile;
+    if (exist01and02) {
       fs.unlinkSync(firstFile);
-      // Renomeia o _02 para _01
-      fs.renameSync(secondFile, firstFile);
-    } else if (fs.existsSync(secondFile)) {
-      // Se apenas o _02 existe, renomeia o _02 para _01
       fs.renameSync(secondFile, firstFile);
     }
+    if (onlyExist02) fs.renameSync(secondFile, firstFile);
 
-    // Após todas as verificações e renomeações, retorna o caminho para o novo _02
-    return this.generateOutputDir(sourceDB, 2); // Retorna o caminho para o arquivo_02.GBK
+    return this.generateOutputDir(sourceDB, 2);
   }
 
-  // Método para fazer o backup sem porcentagem
-  async makeBackup(
-    databaseNames: string[],
-    {
-      onSuccess,
-      onFail,
-    }: {
-      onSuccess: (bd: string) => void;
-      onFail: (bd: string) => void;
-    }
-  ) {
+  async makeBackup({
+    databaseNames,
+    onSuccess = () => {},
+    onFail = () => {},
+  }: {
+    databaseNames: string[];
+    onSuccess?: (bd: string) => void;
+    onFail?: (bd: string) => void;
+  }) {
     try {
-      // Verifica se todos os arquivos de banco de dados existem
-
       this.verifyDatabaseFiles(databaseNames);
 
       const commands = databaseNames.map((dbName) => {
@@ -127,9 +113,7 @@ export class Gbak {
         });
       });
 
-      // Espera que todos os comandos sejam concluídos
       await Promise.all(commandPromises);
-
       console.log("Todos os comandos de backup foram executados.");
     } catch (error) {
       console.error(`Erro: ${error.message}`);

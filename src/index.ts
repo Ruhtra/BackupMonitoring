@@ -7,7 +7,7 @@ import { sendToClients } from "./Presentation/Middlewares/SseHandler";
 import { regGetAllUseCase } from "./Application/Reg/GetAll";
 
 backupFirebirdUseCase.exeute({
-  cb: async () => {
+  onUpdate: async () => {
     sendToClients(await regGetAllUseCase.exeute());
   },
 });

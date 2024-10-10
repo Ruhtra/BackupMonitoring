@@ -25,9 +25,9 @@ export class BackupFirebirdUseCase
 {
   constructor(private regRepository: IRegRepository) {}
 
-  async exeute({ cb }: BackupFirebirdInputDto): Promise<void> {
+  async exeute({ onUpdate }: BackupFirebirdInputDto): Promise<void> {
     // Schedule the backup to run every day at 8 AM
-    cron.schedule("17 14 * * *", async () => {
+    cron.schedule("05 08 * * *", async () => {
       const regs: RegEntity[] = dbs.map((e) => {
         return RegEntity.create({
           status: "progress",
@@ -38,23 +38,25 @@ export class BackupFirebirdUseCase
         await Promise.all(
           regs.map(async (reg) => await this.regRepository.save(reg))
         );
-        await cb(); // Notify clients
+        await onUpdate();
 
-        function onSuccess(dbName: string) {
-          const reg = regs.find((reg) => reg.dbName == dbName);
-          reg.update({ status: "successs" });
-          cb(); // Notify clients
-        }
-        function onFail(dbName: string) {
-          const reg = regs.find((reg) => reg.dbName == dbName);
-          reg.update({ status: "error" });
-          cb(); // Notify clients
-        }
+        await gbak.makeBackup({
+          databaseNames: dbs,
 
-        await gbak.makeBackup(dbs, {
-          onSuccess,
-          onFail,
+          onSuccess: async (dbName: string) => {
+            const reg = regs.find((reg) => reg.dbName == dbName);
+            reg.update({ status: "successs" });
+            await this.regRepository.update(reg);
+            onUpdate();
+          },
+          onFail: async (dbName: string) => {
+            const reg = regs.find((reg) => reg.dbName == dbName);
+            reg.update({ status: "error" });
+            await this.regRepository.update(reg);
+            onUpdate();
+          },
         });
+
         await sender.sendFiles();
       } catch (error) {
         console.error(`Erro durante o backup: ${error.message}`);
@@ -64,7 +66,7 @@ export class BackupFirebirdUseCase
             await this.regRepository.update(reg);
           })
         );
-        await cb(); // Notify clients
+        await onUpdate();
       }
     });
   }
