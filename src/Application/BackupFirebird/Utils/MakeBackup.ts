@@ -6,6 +6,7 @@ export class Gbak {
   firebirdPath: string;
   databaseDir: string;
   outputDir: string;
+  logDir: string;
 
   constructor(databaseDir: string, outputDir: string) {
     const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
@@ -18,16 +19,23 @@ export class Gbak {
     );
     this.databaseDir = databaseDir;
     this.outputDir = outputDir;
+    this.logDir = path.join(outputDir, "log");
   }
 
   generateDatabaseDir(sourceDB: string) {
     return path.join(this.databaseDir, sourceDB + ".FDB");
   }
 
-  generateOutputDir(sourceDB: string, version: number = 1) {
+  generateOutputDir(
+    sourceDB: string,
+    type: "database" | "log",
+    version: number = 1
+  ) {
+    const ext = type == "database" ? "GBK" : "LOG";
+    const output = type == "database" ? this.outputDir : this.logDir;
     return path.join(
-      this.outputDir,
-      `${sourceDB}_${String(version).padStart(2, "0")}.GBK`
+      output,
+      `${sourceDB}_${String(version).padStart(2, "0")}.${ext}`
     );
   }
 
@@ -40,9 +48,12 @@ export class Gbak {
     }
   }
 
-  generateUniqueOutputFileName(sourceDB: string): string {
-    const firstFile = this.generateOutputDir(sourceDB, 1);
-    const secondFile = this.generateOutputDir(sourceDB, 2);
+  generateUniqueOutputFileName(
+    sourceDB: string,
+    type: "database" | "log"
+  ): string {
+    const firstFile = this.generateOutputDir(sourceDB, type, 1);
+    const secondFile = this.generateOutputDir(sourceDB, type, 2);
 
     const isEmpty = !fs.existsSync(firstFile) && !fs.existsSync(secondFile);
     const exist01and02 = fs.existsSync(firstFile) && fs.existsSync(secondFile);
@@ -57,7 +68,7 @@ export class Gbak {
     }
     if (onlyExist02) fs.renameSync(secondFile, firstFile);
 
-    return this.generateOutputDir(sourceDB, 2);
+    return this.generateOutputDir(sourceDB, type, 2);
   }
 
   async makeBackup({
@@ -73,9 +84,13 @@ export class Gbak {
       this.verifyDatabaseFiles(databaseNames);
 
       const commands = databaseNames.map((dbName) => {
-        const outputFilePath = this.generateUniqueOutputFileName(dbName);
+        const outputFilePath = this.generateUniqueOutputFileName(
+          dbName,
+          "database"
+        );
         const inputFielPath = this.generateDatabaseDir(dbName);
-        return `"${this.firebirdPath}" -B -b -v -y "${outputFilePath}.txt" -user SYSDBA -password masterkey "${inputFielPath}" "${outputFilePath}"`;
+        const outputFileLog = this.generateUniqueOutputFileName(dbName, "log");
+        return `"${this.firebirdPath}" -B -b -v -y "${outputFileLog}" -user SYSDBA -password masterkey "${inputFielPath}" "${outputFilePath}"`;
       });
 
       const commandPromises = commands.map(async (command, index) => {

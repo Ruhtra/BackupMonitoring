@@ -27,7 +27,7 @@ export class BackupFirebirdUseCase
 
   async exeute({ onUpdate }: BackupFirebirdInputDto): Promise<void> {
     // Schedule the backup to run every day at 8 AM
-    cron.schedule("37 09 * * *", async () => {
+    cron.schedule("51 09 * * *", async () => {
       const regs: RegEntity[] = dbs.map((e) => {
         return RegEntity.create({
           status: "progress",
