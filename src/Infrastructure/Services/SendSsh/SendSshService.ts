@@ -1,11 +1,14 @@
-import { exec } from "child_process";
-import { promisify } from "util";
 import fs from "fs";
 import path from "path";
-
+import { exec } from "child_process";
+import { promisify } from "util";
+import {
+  ISendService,
+  SendOptions,
+} from "../../../Domain/Services/ISendService";
 const execAsync = promisify(exec);
 
-export class FileSender {
+export class SendSshService implements ISendService {
   localPath: string;
   remotePath: string;
   user: string;
@@ -25,13 +28,7 @@ export class FileSender {
     this.port = port;
   }
 
-  async sendFiles({
-    onSuccess,
-    onFail,
-  }: {
-    onSuccess: (dbName: string) => void;
-    onFail: (dbName: string) => void;
-  }) {
+  async execute({ onSuccess, onFail }: SendOptions): Promise<void> {
     try {
       const files = fs.readdirSync(this.localPath);
       const gbkFiles = files.filter((file) => file.endsWith(".GBK"));
@@ -41,13 +38,13 @@ export class FileSender {
         return;
       }
 
-      const uploadPromises = gbkFiles.map((file) => {
+      const uploadPromises = gbkFiles.map(async (file) => {
         const localFilePath = path.join(this.localPath, file);
         const remoteFilePath = path.join(this.remotePath, file);
 
-        const command = `scp.exe -P ${this.port} "${localFilePath}" ${this.user}@${this.address}:"${remoteFilePath}"`;
+        const command = `scp -P ${this.port} "${localFilePath}" ${this.user}@${this.address}:"${remoteFilePath}"`;
 
-        return execAsync(command)
+        return await execAsync(command)
           .then(() => {
             console.log(`Arquivo enviado: ${file}`);
             //REMOVER ESSA GAMBIARRA
@@ -56,7 +53,7 @@ export class FileSender {
           .catch((error) => {
             console.error(`Erro ao enviar ${file}: ${error.message}`);
             //REMOVER ESSA GAMBIARRA
-            onFail(file.split("_")[0]);
+            onFail(file.split("_")[0], error);
           });
       });
 

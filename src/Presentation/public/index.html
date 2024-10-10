@@ -29,8 +29,8 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Data e Hora de Criação</th>
-                <th>Status</th>
-                <th>StatusSsh</th>
+                <th>StatusBackup</th>
+                <th>StatusEnvio</th>
             </tr>
         </thead>
         <tbody>
@@ -53,8 +53,8 @@
                     <td>${registro.id}</td>
                     <td>${registro.dbName}</td>
                     <td>${registro.createdAt}</td>
-                    <td>${registro.status}</td>
-                    <td>${registro.statusSsh}</td>
+                    <td>${registro.statusBackup}</td>
+                    <td>${registro.statusSend}</td>
                 `;
                 tbody.appendChild(row);
             });

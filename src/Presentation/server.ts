@@ -1,11 +1,10 @@
-// import http from "http";
+import http from "http";
+import { env } from "process";
 
-// import { app } from "./app";
-
-// export async function initModules() {
-//   console.log(" ~. Starting modules...");
-
-//   http.createServer(app).listen(env.PORT, () => {
-//     console.log(" >. Server running in: http://localhost:" + env.PORT);
-//   });
-// }
+export class server {
+  static start(app: any) {
+    http.createServer(app).listen(env.PORT, () => {
+      console.log(" >. Server running in: http://localhost:" + env.PORT);
+    });
+  }
+}

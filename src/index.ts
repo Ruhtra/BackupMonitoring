@@ -1,17 +1,14 @@
-import http from "http";
-import { env } from "process";
-import { backupFirebirdUseCase } from "./Application/BackupFirebird";
-
-import { app } from "./Presentation/app";
+import { backupRoutineUseCase } from "./Application/BackupRoutineUseCase";
+import { regGetAllUseCase } from "./Application/RegUseCase/RegGetAll";
+import { app } from "./Presentation/App";
 import { sendToClients } from "./Presentation/Middlewares/SseHandler";
-import { regGetAllUseCase } from "./Application/Reg/GetAll";
+import { server } from "./Presentation/Server";
 
-backupFirebirdUseCase.exeute({
-  onUpdate: async () => {
-    sendToClients(await regGetAllUseCase.exeute());
+backupRoutineUseCase.execute({
+  async Notify() {
+    const regs = await regGetAllUseCase.execute();
+    sendToClients(regs);
   },
 });
 
-http.createServer(app).listen(env.PORT, () => {
-  console.log(" >. Server running in: http://localhost:" + env.PORT);
-});
+server.start(app);

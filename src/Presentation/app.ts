@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { router } from "./Router";
+import { router } from "./Routers";
 // import { RegLocalRepository } from "../Domain/Repositories/RegLocalRepository";
 // import { backupFirebirdUseCase } from "../Application/BackupFirebird";
 // import { regGetAllUseCase } from "../Application/Reg/GetAll";

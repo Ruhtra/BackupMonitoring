@@ -1,4 +1,4 @@
-import { RegLocalRepository } from "../../../Domain/Repositories/RegLocalRepository";
+import { RegLocalRepository } from "../../../Infrastructure/Repositories/RegLocalRepository";
 import { RegGetAllUseCase } from "./RegGetAllUseCase";
 
 const regLocalRepository = new RegLocalRepository();

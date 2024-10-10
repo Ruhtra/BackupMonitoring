@@ -3,14 +3,14 @@ import { randomUUID } from "crypto";
 export type RegProps = {
   id: string;
   dbName: string;
-  status: "progress" | "successs" | "error";
-  statusSsh: "progress" | "successs" | "error" | "idle";
+  statusBackup: "progress" | "successs" | "error" | "idle";
+  statusSend: "progress" | "successs" | "error" | "idle";
   createdAt: Date;
 };
 
-export type RegCreateProps = Pick<RegProps, "status" | "dbName" | "statusSsh">;
-export type RegUpdateStatusProps = Pick<RegProps, "status">;
-export type RegUpdateStatusSshProps = Pick<RegProps, "statusSsh">;
+export type RegCreateProps = Pick<RegProps, "dbName">;
+export type RegUpdateStatusBackupProps = Pick<RegProps, "statusBackup">;
+export type RegUpdateStatusSendProps = Pick<RegProps, "statusSend">;
 
 export class RegEntity {
   private props: RegProps;
@@ -20,18 +20,27 @@ export class RegEntity {
 
   static create(props: RegCreateProps) {
     return new RegEntity({
-      createdAt: new Date(),
-      dbName: props.dbName,
-      statusSsh: props.statusSsh,
       id: randomUUID(),
-      status: props.status,
+      dbName: props.dbName,
+      statusSend: "idle",
+      statusBackup: "idle",
+      createdAt: new Date(),
     });
   }
-  updateStatus(props: RegUpdateStatusProps) {
-    this.props.status = props.status;
+  static with(props: RegProps) {
+    return new RegEntity({
+      createdAt: props.createdAt,
+      dbName: props.dbName,
+      id: props.id,
+      statusBackup: props.statusBackup,
+      statusSend: props.statusSend,
+    });
   }
-  updateStatusSsh(props: RegUpdateStatusSshProps) {
-    this.props.statusSsh = props.statusSsh;
+  updateStatusBackup(props: RegUpdateStatusBackupProps) {
+    this.props.statusBackup = props.statusBackup;
+  }
+  updatestatusSend(props: RegUpdateStatusSendProps) {
+    this.props.statusSend = props.statusSend;
   }
 
   public get id(): string {
@@ -39,12 +48,12 @@ export class RegEntity {
   }
 
   //FIX THIS TYPING
-  public get status(): any {
-    return this.props.status;
+  public get statusBackup(): any {
+    return this.props.statusBackup;
   }
   //FIX THIS TYPING
-  public get statusSsh(): any {
-    return this.props.statusSsh;
+  public get statusSend(): any {
+    return this.props.statusSend;
   }
 
   public get createdAt(): Date {
