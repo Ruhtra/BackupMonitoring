@@ -3,7 +3,35 @@ import { IRegRepository } from "../../Domain/Repositories/IRegRepository";
 
 export class RegLocalRepository implements IRegRepository {
   //ISSO SAI DAQUI
-  private static localDb: RegEntity[] = [];
+  private static localDb: RegEntity[] = [
+    // RegEntity.create({
+    //   dbName: "ableble",
+    // }),
+    // RegEntity.create({
+    //   dbName: "teste",
+    // }),
+    RegEntity.with({
+      dbName: "ableble",
+      createdAt: new Date("2024-10-10"),
+      statusBackup: "idle",
+      statusSend: "error",
+      id: "id9038208490290432",
+    }),
+    RegEntity.with({
+      dbName: "ableble",
+      createdAt: new Date("2024-10-09"),
+      statusBackup: "idle",
+      statusSend: "error",
+      id: "id9038208490290432",
+    }),
+    RegEntity.with({
+      dbName: "ableble",
+      createdAt: new Date("2024-10-08"),
+      statusBackup: "idle",
+      statusSend: "error",
+      id: "id9038208490290432",
+    }),
+  ];
   constructor() {}
 
   async Save(RegEntity: RegEntity): Promise<void> {

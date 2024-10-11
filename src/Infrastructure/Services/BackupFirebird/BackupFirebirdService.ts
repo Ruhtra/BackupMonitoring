@@ -100,7 +100,7 @@ export class BackupFirebirdService implements IBackupService {
         console.log(`Backup para ${dbName}: ${data}`);
       });
 
-      backupProcess.stderr?.on("error", (data) => {
+      backupProcess.stderr?.on("data", (data) => {
         console.error(`Erro ao fazer backup de ${dbName}: ${data}`);
         onFail(dbName, data);
       });
@@ -130,7 +130,20 @@ export class BackupFirebirdService implements IBackupService {
       const promises = dbNames.map((dbName) =>
         this.bkp(dbName, onSuccess, onFail)
       );
-      await Promise.all(promises);
+      const results = await Promise.allSettled(promises);
+
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          console.log(
+            `Backup para ${dbNames[index]} foi concluído com sucesso.`
+          );
+        } else {
+          console.error(
+            `Erro ao fazer backup para ${dbNames[index]}: ${result.reason}`
+          );
+          onFail(dbNames[index], result.reason);
+        }
+      });
 
       console.log("Todos os backups foram executados com sucesso.");
     } catch (error) {

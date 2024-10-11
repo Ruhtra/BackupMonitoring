@@ -4,8 +4,11 @@ import { eventsHandler } from "../Middlewares/SseHandler";
 
 const router = express.Router();
 
-router.get("/events", eventsHandler);
-router.get("/", (req, res, next) => {
+// Serve os arquivos estáticos gerados pelo Vite
+router.use(express.static(path.join(__dirname, "../public")));
+
+router.get("/api/events", eventsHandler);
+router.get("*", (req, res, next) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
