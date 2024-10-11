@@ -3,8 +3,8 @@ import { randomUUID } from "crypto";
 export type RegProps = {
   id: string;
   dbName: string;
-  statusBackup: "progress" | "successs" | "error" | "idle";
-  statusSend: "progress" | "successs" | "error" | "idle";
+  statusBackup: "progress" | "success" | "error" | "idle";
+  statusSend: "progress" | "success" | "error" | "idle";
   createdAt: Date;
 };
 

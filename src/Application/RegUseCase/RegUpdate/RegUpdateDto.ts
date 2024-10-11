@@ -1,7 +1,7 @@
 export interface RegUpdateInputDto {
   id: string;
   data: {
-    statusBackup: "progress" | "successs" | "error";
-    statusSend: "progress" | "successs" | "error" | "idle";
+    statusBackup: "progress" | "success" | "error";
+    statusSend: "progress" | "success" | "error" | "idle";
   };
 }

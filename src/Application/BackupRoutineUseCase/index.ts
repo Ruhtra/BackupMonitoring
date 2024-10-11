@@ -3,12 +3,14 @@ import { RegLocalRepository } from "../../Infrastructure/Repositories/RegLocalRe
 import { BackupFirebirdService } from "../../Infrastructure/Services/BackupFirebird/BackupFirebirdService";
 import { BackupRoutineUseCase } from "./BackupRoutineUseCase";
 import { SendSshService } from "../../Infrastructure/Services/SendSsh/SendSshService";
+import { RegPrismaRepository } from "../../Infrastructure/Repositories/RegPrismaRepository";
 
 const dbDir = path.join("C:", "Dados");
 const outputDir = path.join("C:", "bkp");
 const pathRemote = path.join("C:", "BackupAntonio");
 
 const regLocalRepository = new RegLocalRepository();
+const regPrismaRepository = new RegPrismaRepository();
 const backupFirebirdService = new BackupFirebirdService(dbDir, outputDir);
 const sendSshService = new SendSshService(
   outputDir,
@@ -19,7 +21,7 @@ const sendSshService = new SendSshService(
 );
 
 const backupRoutineUseCase = new BackupRoutineUseCase(
-  regLocalRepository,
+  regPrismaRepository,
   backupFirebirdService,
   sendSshService
 );

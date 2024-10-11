@@ -1,0 +1,20 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // Lê a URL do banco de dados do .env
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Reg {
+  id           String   @id
+  dbName       String
+  statusBackup String
+  statusSend   String
+  createdAt    DateTime
+
+  @@map("reg")
+}

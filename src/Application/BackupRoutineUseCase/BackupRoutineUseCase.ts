@@ -17,7 +17,7 @@ export class BackupRoutineUseCase
     private backupService: IBackupService,
     private sendService: ISendService
   ) {
-    this.time = " 15 07 11 * * *";
+    this.time = " 10 14 12 * * *";
   }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
@@ -51,7 +51,7 @@ export class BackupRoutineUseCase
             const reg = regs.find((reg) => reg.dbName === dbName);
             if (reg) {
               reg.updateStatusBackup({
-                statusBackup: "successs",
+                statusBackup: "success",
               });
               await this.regRepository.Update(reg);
               Notify();
@@ -83,7 +83,7 @@ export class BackupRoutineUseCase
             const reg = regs.find((reg) => reg.dbName === dbName);
             if (reg) {
               reg.updatestatusSend({
-                statusSend: "successs",
+                statusSend: "success",
               });
               await this.regRepository.Update(reg);
               Notify();
