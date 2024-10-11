@@ -93,6 +93,7 @@ export class BackupFirebirdService implements IBackupService {
     onFail: (dbName: string, error: Error | number) => void
   ): Promise<void> {
     return new Promise((resolve) => {
+      this.verifyDatabaseFile(dbName);
       const command = this.generateCommand(dbName);
       const backupProcess = exec(command);
 
@@ -121,12 +122,12 @@ export class BackupFirebirdService implements IBackupService {
     });
   }
 
-  async MakeBackup(options: BackupOptions): Promise<void> {
-    const { dbNames, onSuccess, onFail } = options;
-
+  async MakeBackup({
+    dbNames,
+    onSuccess,
+    onFail,
+  }: BackupOptions): Promise<void> {
     try {
-      this.verifyDatabaseFiles(dbNames);
-
       const promises = dbNames.map((dbName) =>
         this.bkp(dbName, onSuccess, onFail)
       );

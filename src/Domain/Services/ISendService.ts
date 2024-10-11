@@ -1,4 +1,5 @@
 export interface SendOptions {
+  fileNames: string[];
   onSuccess: (dbName: string) => void;
   onFail: (dbName: string, error: Error | number) => void;
 }

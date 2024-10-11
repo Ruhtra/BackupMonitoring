@@ -6,7 +6,7 @@ import { IRegRepository } from "../../Domain/Repositories/IRegRepository";
 import { RegEntity } from "../../Domain/Entities/RegEntity";
 import { BackupRoutineInputDto } from "./BackupRouteDto";
 
-const DBS = ["TESTE2", "TESTE"];
+const DBS = ["TESTE"];
 
 export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
@@ -17,13 +17,13 @@ export class BackupRoutineUseCase
     private backupService: IBackupService,
     private sendService: ISendService
   ) {
-    this.time = " 10 14 12 * * *";
+    this.time = "10 22 14 * * *";
   }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
     try {
       cron.schedule(this.time, async () => {
-        const regs = await Promise.all(
+        await Promise.all(
           DBS.map(async (db) => {
             const reg = RegEntity.create({
               dbName: db,
@@ -31,75 +31,64 @@ export class BackupRoutineUseCase
 
             await this.regRepository.Save(reg);
             Notify();
-            return reg;
-          })
-        );
 
-        await Promise.all(
-          regs.map(async (reg) => {
             reg.updateStatusBackup({
               statusBackup: "progress",
             });
             await this.regRepository.Update(reg);
             Notify();
-          })
-        );
 
-        await this.backupService.MakeBackup({
-          dbNames: DBS,
-          onSuccess: async (dbName) => {
-            const reg = regs.find((reg) => reg.dbName === dbName);
-            if (reg) {
-              reg.updateStatusBackup({
-                statusBackup: "success",
-              });
-              await this.regRepository.Update(reg);
-              Notify();
-            }
-          },
-          onFail: async (dbName) => {
-            const reg = regs.find((reg) => reg.dbName === dbName);
-            if (reg) {
-              reg.updateStatusBackup({
-                statusBackup: "error",
-              });
-              await this.regRepository.Update(reg);
-              Notify();
-            }
-          },
-        });
+            await this.backupService.MakeBackup({
+              dbNames: DBS,
+              onSuccess: async (dbName) => {
+                if (reg) {
+                  reg.updateStatusBackup({
+                    statusBackup: "success",
+                  });
+                  await this.regRepository.Update(reg);
+                  Notify();
+                }
+              },
+              onFail: async (dbName) => {
+                if (reg) {
+                  reg.updateStatusBackup({
+                    statusBackup: "error",
+                  });
+                  await this.regRepository.Update(reg);
+                  Notify();
+                }
+              },
+            });
 
-        await Promise.all(
-          regs.map(async (reg) => {
             reg.updatestatusSend({
               statusSend: "progress",
             });
             await this.regRepository.Update(reg);
             Notify();
+
+            await this.sendService.execute({
+              fileNames: [reg.dbName + "_01.GBK"],
+              onSuccess: async (dbName) => {
+                if (reg) {
+                  reg.updatestatusSend({
+                    statusSend: "success",
+                  });
+                  await this.regRepository.Update(reg);
+                  Notify();
+                }
+              },
+              onFail: async (dbName, error) => {
+                if (reg) {
+                  reg.updatestatusSend({
+                    statusSend: "error",
+                  });
+                  await this.regRepository.Update(reg);
+                  Notify();
+                }
+              },
+            });
           })
         );
-        await this.sendService.execute({
-          onSuccess: async (dbName) => {
-            const reg = regs.find((reg) => reg.dbName === dbName);
-            if (reg) {
-              reg.updatestatusSend({
-                statusSend: "success",
-              });
-              await this.regRepository.Update(reg);
-              Notify();
-            }
-          },
-          onFail: async (dbName, error) => {
-            const reg = regs.find((reg) => reg.dbName === dbName);
-            if (reg) {
-              reg.updatestatusSend({
-                statusSend: "error",
-              });
-              await this.regRepository.Update(reg);
-              Notify();
-            }
-          },
-        });
       });
       console.log(`Schedule create to ${this.time}`);
     } catch (error) {

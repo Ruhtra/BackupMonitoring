@@ -21,7 +21,7 @@ const sendSshService = new SendSshService(
 );
 
 const backupRoutineUseCase = new BackupRoutineUseCase(
-  regPrismaRepository,
+  regLocalRepository,
   backupFirebirdService,
   sendSshService
 );

@@ -5,6 +5,6 @@ import { RegCreateUseCase } from "./RegCreateUseCase";
 const regLocalRepository = new RegLocalRepository();
 const regPrismaRepository = new RegPrismaRepository();
 
-const regCreateUseCase = new RegCreateUseCase(regPrismaRepository);
+const regCreateUseCase = new RegCreateUseCase(regLocalRepository);
 
 export { regCreateUseCase };

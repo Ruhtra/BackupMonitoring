@@ -5,6 +5,6 @@ import { RegGetAllUseCase } from "./RegGetAllUseCase";
 const regLocalRepository = new RegLocalRepository();
 const regPrismaRepository = new RegPrismaRepository();
 
-const regGetAllUseCase = new RegGetAllUseCase(regPrismaRepository);
+const regGetAllUseCase = new RegGetAllUseCase(regLocalRepository);
 
 export { regGetAllUseCase };
