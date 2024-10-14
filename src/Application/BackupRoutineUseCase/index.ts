@@ -25,7 +25,7 @@ const sendScpService = new SendScpService(
 );
 
 const backupRoutineUseCase = new BackupRoutineUseCase(
-  regLocalRepository,
+  regPrismaRepository,
   backupFirebirdService,
   sendScpService
 );
