@@ -6,8 +6,8 @@ import { RegPrismaRepository } from "../../Infrastructure/Repositories/RegPrisma
 import { SendScpService } from "../../Infrastructure/Services/SendScp/SendScpService";
 
 const dbDir = path.join("C:", "Dados");
-const outputDir = path.join("C:", "bkp");
-const pathRemote = path.join("C:", "BackupAntonio");
+const outputDir = path.join("C:", "delete");
+const pathRemote = path.join("C:", "BackupAntonioNovo");
 
 const regLocalRepository = new RegLocalRepository();
 const regPrismaRepository = new RegPrismaRepository();

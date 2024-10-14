@@ -19,7 +19,7 @@ export class BackupRoutineUseCase
     private backupService: IBackupService,
     private sendService: ISendService
   ) {
-    this.time = "00 21 10 * * *";
+    this.time = "00 36 11 * * *";
   }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
