@@ -5,8 +5,9 @@ import cron from "node-cron";
 import { IRegRepository } from "../../Domain/Repositories/IRegRepository";
 import { RegEntity } from "../../Domain/Entities/RegEntity";
 import { BackupRoutineInputDto } from "./BackupRouteDto";
+import { formatDate } from "../../Infrastructure/Services/BackupFirebird/BackupFirebirdService";
 
-const DBS = ["TESTE"];
+const DBS = ["TESTE", "TESTE2"];
 
 export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
@@ -17,7 +18,7 @@ export class BackupRoutineUseCase
     private backupService: IBackupService,
     private sendService: ISendService
   ) {
-    this.time = "10 22 14 * * *";
+    this.time = "00 26 09 * * *";
   }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
@@ -39,7 +40,7 @@ export class BackupRoutineUseCase
             Notify();
 
             await this.backupService.MakeBackup({
-              dbNames: DBS,
+              dbNames: [db],
               onSuccess: async (dbName) => {
                 if (reg) {
                   reg.updateStatusBackup({
@@ -67,7 +68,7 @@ export class BackupRoutineUseCase
             Notify();
 
             await this.sendService.execute({
-              fileNames: [reg.dbName + "_01.GBK"],
+              fileNames: [reg.dbName + `_${formatDate(new Date())}.GBK`],
               onSuccess: async (dbName) => {
                 if (reg) {
                   reg.updatestatusSend({

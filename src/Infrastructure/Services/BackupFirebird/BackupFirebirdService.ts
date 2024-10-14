@@ -6,6 +6,13 @@ import {
 } from "../../../Domain/Services/IBackupService";
 import { exec } from "child_process";
 
+export const formatDate = (date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2); // últimos 2 dígitos
+  return `${day}_${month}_${year}`;
+};
+
 export class BackupFirebirdService implements IBackupService {
   private firebirdPath: string;
   private databaseDir: string;
@@ -30,19 +37,6 @@ export class BackupFirebirdService implements IBackupService {
     return path.join(this.databaseDir, sourceDB + ".FDB");
   }
 
-  private generateOutputDir(
-    sourceDB: string,
-    type: "database" | "log",
-    version: number = 1
-  ): string {
-    const ext = type === "database" ? "GBK" : "LOG";
-    const output = type === "database" ? this.outputDir : this.logDir;
-    return path.join(
-      output,
-      `${sourceDB}_${String(version).padStart(2, "0")}.${ext}`
-    );
-  }
-
   private verifyDatabaseFile(dbName: string): void {
     const dbPath = this.generateDatabaseDir(dbName);
     if (!fs.existsSync(dbPath)) {
@@ -50,40 +44,77 @@ export class BackupFirebirdService implements IBackupService {
     }
   }
 
-  private verifyDatabaseFiles(databaseNames: string[]): void {
-    for (const dbName of databaseNames) {
-      this.verifyDatabaseFile(dbName);
-    }
-  }
+  // Função para gerar o nome do arquivo de backup
+  private generateBackupFilename = (
+    dbName: string,
+    isLog: boolean = false
+  ): string => {
+    const currentDate = new Date();
+    const outputDir = isLog ? this.logDir : this.outputDir;
+    const extension = isLog ? "log" : "GBK"; // Define a extensão com base no tipo de arquivo
 
-  private generateUniqueOutputFileName(
-    sourceDB: string,
-    type: "database" | "log"
-  ): string {
-    const firstFile = this.generateOutputDir(sourceDB, type, 1);
-    const secondFile = this.generateOutputDir(sourceDB, type, 2);
-
-    if (!fs.existsSync(firstFile) && !fs.existsSync(secondFile))
-      return firstFile;
-    if (fs.existsSync(firstFile) && !fs.existsSync(secondFile))
-      return secondFile;
-    if (fs.existsSync(firstFile) && fs.existsSync(secondFile)) {
-      fs.unlinkSync(firstFile);
-      fs.renameSync(secondFile, firstFile);
-    } else {
-      fs.renameSync(secondFile, firstFile);
+    // Cria a pasta de backup se ela não existir
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
     }
 
-    return this.generateOutputDir(sourceDB, type, 2);
-  }
+    const currentBackup = `${dbName}_${formatDate(currentDate)}.${extension}`;
+    return path.join(outputDir, currentBackup); // Retorna o nome do backup (sem manipulação de arquivos)
+  };
+
+  private generateUniqueOutputFileName = (
+    dbName: string,
+    daysToKeep: number,
+    isLog: boolean = false
+  ): string => {
+    const outputDir = isLog ? this.logDir : this.outputDir;
+    const extension = isLog ? "log" : "GBK"; // Define a extensão com base no tipo de arquivo
+    const currentDate = new Date();
+
+    // Gera uma lista de datas permitidas (dias anteriores até o limite especificado)
+    const allowedDates = [];
+    for (let i = 0; i <= daysToKeep; i++) {
+      const date = new Date();
+      date.setDate(currentDate.getDate() - i);
+      allowedDates.push(formatDate(date));
+    }
+
+    const currentBackup = this.generateBackupFilename(dbName, isLog);
+
+    // Lê os arquivos existentes na pasta
+    const files = fs
+      .readdirSync(outputDir)
+      .filter((file) => file.endsWith(`.${extension}`));
+
+    let backupExists = false;
+
+    // Percorre os arquivos existentes
+    files.forEach((file) => {
+      const filePath = path.join(outputDir, file);
+      const fileDate = file
+        .split("_")
+        .slice(-3)
+        .join("_")
+        .replace(`.${extension}`, "");
+
+      // Deleta backups que não estão na lista de datas permitidas
+      if (!allowedDates.includes(fileDate)) {
+        fs.unlinkSync(filePath);
+      } else if (path.join(outputDir, file) === currentBackup) {
+        // Se já houver um backup para a data atual, deleta
+        fs.unlinkSync(filePath);
+        backupExists = true;
+      }
+    });
+
+    return currentBackup; // Retorna o nome do arquivo de backup único
+  };
 
   private generateCommand(dbName: string): string {
-    const outputFilePath = this.generateUniqueOutputFileName(
-      dbName,
-      "database"
-    );
+    const outputFilePath = this.generateUniqueOutputFileName(dbName, 3);
     const inputFilePath = this.generateDatabaseDir(dbName);
-    const outputFileLog = this.generateUniqueOutputFileName(dbName, "log");
+    const outputFileLog = this.generateUniqueOutputFileName(dbName, 3, true);
+
     return `"${this.firebirdPath}" -B -b -v -y "${outputFileLog}" -user SYSDBA -password masterkey "${inputFilePath}" "${outputFilePath}"`;
   }
 
