@@ -13,12 +13,13 @@ export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
 {
   time: string;
+  private lastUpdate: number = 0; // Para armazenar o último timestamp
   constructor(
     private regRepository: IRegRepository,
     private backupService: IBackupService,
     private sendService: ISendService
   ) {
-    this.time = "00 26 09 * * *";
+    this.time = "00 21 10 * * *";
   }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
@@ -84,6 +85,15 @@ export class BackupRoutineUseCase
                     statusSend: "error",
                   });
                   await this.regRepository.Update(reg);
+                  Notify();
+                }
+              },
+              onProgress: (dbName, percentage) => {
+                const now = Date.now();
+                if (now - this.lastUpdate >= 5000) {
+                  // 5000 milissegundos = 5 segundos
+                  console.log(percentage, " to ", dbName);
+                  this.lastUpdate = now; // Atualiza o timestamp
                   Notify();
                 }
               },
