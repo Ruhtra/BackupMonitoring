@@ -3,5 +3,9 @@ export interface RegGetAllOutputDto {
   dbName: string;
   statusBackup: string;
   statusSend: string;
+
+  startBackup?: Date;
+  finishBackup?: Date;
+
   createdAt: Date;
 }

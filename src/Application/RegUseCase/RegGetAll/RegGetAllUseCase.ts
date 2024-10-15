@@ -19,6 +19,8 @@ export class RegGetAllUseCase implements IUseCase<void, RegGetAllOutputDto[]> {
       dbName: reg.dbName,
       statusBackup: reg.statusBackup,
       statusSend: reg.statusSend,
+      startBackup: reg.startBackup,
+      finishBackup: reg.finishBackup,
       createdAt: reg.createdAt,
     }));
   }

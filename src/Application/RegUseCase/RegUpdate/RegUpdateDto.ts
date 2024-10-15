@@ -3,5 +3,7 @@ export interface RegUpdateInputDto {
   data: {
     statusBackup: "progress" | "success" | "error";
     statusSend: "progress" | "success" | "error" | "idle";
+    startBackup?: Date;
+    finishBackup?: Date;
   };
 }

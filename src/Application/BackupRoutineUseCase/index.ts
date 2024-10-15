@@ -28,8 +28,8 @@ const backupRoutineUseCase = new BackupRoutineUseCase(
   regPrismaRepository,
   backupFirebirdService,
   sendScpService,
-  "00 36 11 * * *",
-  ["TESTE"]
+  "59 46 14 * * *",
+  ["TESTE", "TESTE2"]
 );
 
 export { backupRoutineUseCase };

@@ -5,12 +5,13 @@ export type RegProps = {
   dbName: string;
   statusBackup: "progress" | "success" | "error" | "idle";
   statusSend: "progress" | "success" | "error" | "idle";
+  startBackup?: Date;
+  finishBackup?: Date;
   createdAt: Date;
 };
 
 export type RegCreateProps = Pick<RegProps, "dbName">;
-export type RegUpdateStatusBackupProps = Pick<RegProps, "statusBackup">;
-export type RegUpdateStatusSendProps = Pick<RegProps, "statusSend">;
+export type RegUpdateProps = Omit<RegProps, "id" | "dbName" | "createdAt">;
 
 export class RegEntity {
   private props: RegProps;
@@ -27,32 +28,44 @@ export class RegEntity {
       createdAt: new Date(),
     });
   }
+  update(props: RegUpdateProps) {
+    Object.assign(this, props);
+  }
   static with(props: RegProps) {
     return new RegEntity({
       createdAt: props.createdAt,
       dbName: props.dbName,
       id: props.id,
+      startBackup: props.startBackup,
+      finishBackup: props.finishBackup,
       statusBackup: props.statusBackup,
       statusSend: props.statusSend,
     });
   }
-  updateStatusBackup(props: RegUpdateStatusBackupProps) {
-    this.props.statusBackup = props.statusBackup;
+
+  StartBackup() {
+    this.props.statusBackup = "progress";
+    this.props.startBackup = new Date();
   }
-  updatestatusSend(props: RegUpdateStatusSendProps) {
-    this.props.statusSend = props.statusSend;
+  FinishBackup(status: "error" | "success") {
+    this.props.statusBackup = status;
+  }
+  StartSend() {
+    this.props.statusSend = "progress";
+  }
+  FinishSend(status: "error" | "success") {
+    this.props.statusSend = status;
+    this.props.finishBackup = new Date();
   }
 
   public get id(): string {
     return this.props.id;
   }
 
-  //FIX THIS TYPING
-  public get statusBackup(): any {
+  public get statusBackup(): RegProps["statusBackup"] {
     return this.props.statusBackup;
   }
-  //FIX THIS TYPING
-  public get statusSend(): any {
+  public get statusSend(): RegProps["statusSend"] {
     return this.props.statusSend;
   }
 
@@ -61,5 +74,11 @@ export class RegEntity {
   }
   public get dbName(): string {
     return this.props.dbName;
+  }
+  public get startBackup(): Date {
+    return this.props.startBackup;
+  }
+  public get finishBackup(): Date {
+    return this.props.finishBackup;
   }
 }

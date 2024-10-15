@@ -11,6 +11,8 @@ export class RegPrismaRepository implements IRegRepository {
         dbName: regEntity.dbName,
         statusBackup: regEntity.statusBackup,
         statusSend: regEntity.statusSend,
+        startBackup: regEntity.startBackup,
+        finishBackup: regEntity.finishBackup,
       },
     });
   }
@@ -31,6 +33,8 @@ export class RegPrismaRepository implements IRegRepository {
         | "error"
         | "idle",
       statusSend: reg.statusSend as "progress" | "success" | "error" | "idle",
+      startBackup: reg.startBackup,
+      finishBackup: reg.finishBackup,
       createdAt: reg.createdAt,
     });
   }
@@ -52,6 +56,8 @@ export class RegPrismaRepository implements IRegRepository {
           | "success"
           | "error"
           | "idle",
+        startBackup: reg.startBackup,
+        finishBackup: reg.finishBackup,
         createdAt: reg.createdAt,
       })
     );
@@ -64,6 +70,8 @@ export class RegPrismaRepository implements IRegRepository {
         dbName: regEntity.dbName,
         statusBackup: regEntity.statusBackup,
         statusSend: regEntity.statusSend,
+        startBackup: regEntity.startBackup,
+        finishBackup: regEntity.finishBackup,
       },
     });
   }

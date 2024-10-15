@@ -31,9 +31,7 @@ export class BackupRoutineUseCase
             await this.regRepository.Save(reg);
             Notify();
 
-            reg.updateStatusBackup({
-              statusBackup: "progress",
-            });
+            reg.StartBackup();
             await this.regRepository.Update(reg);
             Notify();
 
@@ -41,27 +39,21 @@ export class BackupRoutineUseCase
               dbNames: [db],
               onSuccess: async (dbName) => {
                 if (reg) {
-                  reg.updateStatusBackup({
-                    statusBackup: "success",
-                  });
+                  reg.FinishBackup("success");
                   await this.regRepository.Update(reg);
                   Notify();
                 }
               },
               onFail: async (dbName) => {
                 if (reg) {
-                  reg.updateStatusBackup({
-                    statusBackup: "error",
-                  });
+                  reg.FinishBackup("error");
                   await this.regRepository.Update(reg);
                   Notify();
                 }
               },
             });
 
-            reg.updatestatusSend({
-              statusSend: "progress",
-            });
+            reg.StartSend();
             await this.regRepository.Update(reg);
             Notify();
 
@@ -69,18 +61,14 @@ export class BackupRoutineUseCase
               fileNames: [reg.dbName + `_${formatDate(new Date())}.GBK`],
               onSuccess: async (dbName) => {
                 if (reg) {
-                  reg.updatestatusSend({
-                    statusSend: "success",
-                  });
+                  reg.FinishSend("success");
                   await this.regRepository.Update(reg);
                   Notify();
                 }
               },
               onFail: async (dbName, error) => {
                 if (reg) {
-                  reg.updatestatusSend({
-                    statusSend: "error",
-                  });
+                  reg.FinishSend("error");
                   await this.regRepository.Update(reg);
                   Notify();
                 }

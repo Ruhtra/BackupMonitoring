@@ -10,10 +10,12 @@ generator client {
 }
 
 model Reg {
-  id           String   @id
+  id           String    @id
   dbName       String
   statusBackup String
   statusSend   String
+  startBackup  DateTime?
+  finishBackup DateTime?
   createdAt    DateTime
 
   @@map("reg")

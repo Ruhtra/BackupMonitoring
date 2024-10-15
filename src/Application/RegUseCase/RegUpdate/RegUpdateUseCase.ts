@@ -8,11 +8,11 @@ export class RegUpdateUseCase implements IUseCase<RegUpdateInputDto, void> {
     const reg = await this.regRepository.Get(id);
     if (!reg) throw new Error("Not Found " + id);
 
-    reg.updateStatusBackup({
+    reg.update({
       statusBackup: data.statusBackup,
-    });
-    reg.updatestatusSend({
       statusSend: data.statusSend,
+      finishBackup: data.finishBackup,
+      startBackup: data.startBackup,
     });
 
     this.regRepository.Update(reg);
