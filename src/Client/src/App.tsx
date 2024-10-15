@@ -3,7 +3,6 @@
 import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertCircle,
   CheckCircle,
@@ -13,6 +12,7 @@ import {
   LucideIcon,
   Upload,
   HardDrive,
+  Calendar,
 } from "lucide-react";
 import {
   Tooltip,
@@ -23,11 +23,13 @@ import {
 import { RegGetAllOutputDto } from "../../Application/RegUseCase/RegGetAll/RegGetAllDto";
 import { useGetSeparacao } from "./Services/Querys/Reg/GetAll";
 
-interface Backup {
-  id: string;
-  dbName: string;
-  statusBackup: string;
-  statusSend: string;
+interface Backup
+  extends Omit<
+    RegGetAllOutputDto,
+    "startBackup" | "finishBackup" | "createdAt"
+  > {
+  startBackup?: string;
+  finishBackup?: string;
   createdAt: string;
 }
 
@@ -47,6 +49,14 @@ export function App() {
       item.createdAt instanceof Date
         ? item.createdAt.toISOString()
         : item.createdAt,
+    startBackup:
+      item.startBackup instanceof Date
+        ? item.startBackup.toISOString()
+        : item.startBackup,
+    finishBackup:
+      item.finishBackup instanceof Date
+        ? item.finishBackup.toISOString()
+        : item.finishBackup,
   }));
 
   const groupedBackups = backups.reduce((acc, backup) => {
@@ -58,7 +68,7 @@ export function App() {
     return acc;
   }, {} as Record<string, Backup[]>);
 
-  const getStatusInfo = (status: string): StatusInfo => {
+  const getStatusInfo = (status: string | null): StatusInfo => {
     switch (status) {
       case "progress":
         return {
@@ -91,108 +101,115 @@ export function App() {
       default:
         return {
           icon: Clock,
-          color: "bg-gray-100 text-gray-800",
+          color: "bg-gray-50 text-gray-400",
           ptBR: "Desconhecido",
-          ptBRShort: "Desc.",
+          ptBRShort: "N/A",
         };
     }
   };
 
+  const BackupItem = ({ backup }: { backup: Backup }) => (
+    <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 mb-3 min-w-[250px]">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
+          <Database className="w-5 h-5 text-gray-600" />
+          <span className="font-medium text-gray-800 truncate">
+            {backup.dbName}
+          </span>
+        </div>
+        <span className="text-xs text-gray-500">
+          {format(parseISO(backup.createdAt), "HH:mm:ss")}
+        </span>
+      </div>
+      <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
+        <div className="flex items-center space-x-1">
+          <Clock className="w-4 h-4" />
+          <span>
+            Início:{" "}
+            {backup.startBackup
+              ? format(parseISO(backup.startBackup), "HH:mm:ss")
+              : "N/A"}
+          </span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <Clock className="w-4 h-4" />
+          <span>
+            Fim:{" "}
+            {backup.finishBackup
+              ? format(parseISO(backup.finishBackup), "HH:mm:ss")
+              : "N/A"}
+          </span>
+        </div>
+      </div>
+      <div className="flex justify-between items-center mt-2">
+        {(
+          [
+            {
+              type: "statusBackup",
+              label: "Backup",
+              icon: HardDrive,
+            },
+            {
+              type: "statusSend",
+              label: "Envio",
+              icon: Upload,
+            },
+          ] as const
+        ).map(({ type, label, icon: StatusIcon }) => {
+          const status = backup[type as keyof Backup] as string | null;
+          const { icon: Icon, color, ptBR, ptBRShort } = getStatusInfo(status);
+          return (
+            <Tooltip key={type}>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className={`flex items-center gap-1 py-1 px-2 ${color}`}
+                >
+                  <StatusIcon className="w-3 h-3" />
+                  <Icon className="w-3 h-3" />
+                  <span className="text-xs font-medium whitespace-nowrap">
+                    {ptBRShort}
+                  </span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {label}: {ptBR}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8">
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">
+      <div className="h-screen w-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 p-4 flex flex-col">
+        <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">
           Monitoramento de Backup
         </h1>
-        <div className="max-w-7xl mx-auto grid gap-8 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-          {Object.entries(groupedBackups).map(([date, dailyBackups]) => (
-            <Card key={date} className="overflow-hidden shadow-lg bg-white">
-              <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-xl text-gray-700">
-                  {format(parseISO(date), "d 'de' MMMM, yyyy")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[400px]">
-                  <div className="divide-y divide-gray-200">
+        <div className="flex-grow overflow-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
+            {Object.entries(groupedBackups).map(([date, dailyBackups]) => (
+              <Card key={date} className="overflow-hidden shadow-lg bg-white">
+                <CardHeader className="py-3 px-4 border-b border-gray-200 bg-gray-50">
+                  <CardTitle className="text-lg text-gray-700 flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-gray-500" />
+                    {format(parseISO(date), "d 'de' MMMM, yyyy")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 overflow-auto max-h-[calc(100vh-200px)]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {dailyBackups.map((backup) => (
-                      <div
-                        key={backup.id}
-                        className="p-4 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-3">
-                            <Database className="w-5 h-5 text-gray-500" />
-                            <div>
-                              <p className="font-medium text-gray-800">
-                                {backup.dbName}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {format(parseISO(backup.createdAt), "HH:mm:ss")}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(
-                            [
-                              {
-                                type: "statusBackup",
-                                label: "Backup",
-                                icon: HardDrive,
-                              },
-                              {
-                                type: "statusSend",
-                                label: "Envio",
-                                icon: Upload,
-                              },
-                            ] as const
-                          ).map(({ type, label, icon: StatusIcon }) => {
-                            const status = backup[type as keyof Backup];
-                            const {
-                              icon: Icon,
-                              color,
-                              ptBR,
-                              ptBRShort,
-                            } = getStatusInfo(status);
-                            return (
-                              <div
-                                key={type}
-                                className={`flex items-center justify-between p-2 rounded-md ${color}`}
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <StatusIcon className="w-4 h-4" />
-                                  <span className="text-sm font-medium">
-                                    {label}
-                                  </span>
-                                </div>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge
-                                      variant="outline"
-                                      className="flex items-center gap-1 bg-white"
-                                    >
-                                      <Icon className="w-4 h-4" />
-                                      <span className="text-xs whitespace-nowrap">
-                                        {ptBRShort}
-                                      </span>
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{ptBR}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <BackupItem key={backup.id} backup={backup} />
                     ))}
                   </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </TooltipProvider>
