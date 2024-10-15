@@ -118,41 +118,44 @@ export class BackupFirebirdService implements IBackupService {
     return `"${this.firebirdPath}" -B -b -v -y "${outputFileLog}" -user SYSDBA -password masterkey "${inputFilePath}" "${outputFilePath}"`;
   }
 
-  private bkp(
+  private async bkp(
     dbName: string,
-    onSuccess: (dbName: string) => void,
-    onFail: (dbName: string, error: Error | number) => void
+    onSuccess: (dbName: string) => Promise<void>,
+    onFail: (dbName: string, error: Error | number) => Promise<void>
   ): Promise<void> {
-    return new Promise((resolve) => {
-      this.verifyDatabaseFile(dbName);
-      const command = this.generateCommand(dbName);
-      const backupProcess = exec(command);
+    return new Promise((resolve, reject) => {
+      try {
+        this.verifyDatabaseFile(dbName);
+        const command = this.generateCommand(dbName);
+        const backupProcess = exec(command);
 
-      backupProcess.stdout?.on("data", (data) => {
-        console.log(`Backup para ${dbName}: ${data}`);
-      });
+        backupProcess.stdout?.on("data", (data) => {
+          console.log(`Backup para ${dbName}: ${data}`);
+        });
 
-      backupProcess.stderr?.on("data", (data) => {
-        console.error(`Erro ao fazer backup de ${dbName}: ${data}`);
-        onFail(dbName, data);
-      });
+        backupProcess.stderr?.on("data", (data) => {
+          console.error(`Erro ao fazer backup de ${dbName}: ${data}`);
+          reject(new Error(data)); // Rejeita a promessa em caso de erro
+        });
 
-      backupProcess.on("close", (code) => {
-        if (code === 0) {
-          console.log(`Backup de ${dbName} concluído com sucesso!`);
-          onSuccess(dbName);
-        } else {
-          console.error(
-            `Processo de backup de ${dbName} falhou com código ${code}`
-          );
-          onFail(dbName, code);
-        }
+        backupProcess.on("close", async (code) => {
+          if (code === 0) {
+            console.log(`Backup de ${dbName} concluído com sucesso!`);
+            await onSuccess(dbName); // Aguarda o callback onSuccess
+          } else {
+            console.error(
+              `Processo de backup de ${dbName} falhou com código ${code}`
+            );
+            await onFail(dbName, code); // Aguarda o callback onFail
+          }
 
-        resolve();
-      });
+          resolve();
+        });
+      } catch (error) {
+        reject(error); // Em caso de exceção, rejeita a promessa
+      }
     });
   }
-
   async MakeBackup({
     dbNames,
     onSuccess,
@@ -162,9 +165,10 @@ export class BackupFirebirdService implements IBackupService {
       const promises = dbNames.map((dbName) =>
         this.bkp(dbName, onSuccess, onFail)
       );
+
       const results = await Promise.allSettled(promises);
 
-      results.forEach((result, index) => {
+      for (const [index, result] of results.entries()) {
         if (result.status === "fulfilled") {
           console.log(
             `Backup para ${dbNames[index]} foi concluído com sucesso.`
@@ -173,9 +177,9 @@ export class BackupFirebirdService implements IBackupService {
           console.error(
             `Erro ao fazer backup para ${dbNames[index]}: ${result.reason}`
           );
-          onFail(dbNames[index], result.reason);
+          await onFail(dbNames[index], result.reason);
         }
-      });
+      }
 
       console.log("Todos os backups foram executados com sucesso.");
     } catch (error) {

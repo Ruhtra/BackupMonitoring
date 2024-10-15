@@ -1,8 +1,8 @@
 export interface SendOptions {
   fileNames: string[];
-  onSuccess: (dbName: string) => void;
+  onSuccess: (dbName: string) => Promise<void>;
+  onFail: (dbName: string, error: Error | number) => Promise<void>;
   onProgress: (dbName: string, percentage: string) => void;
-  onFail: (dbName: string, error: Error | number) => void;
 }
 
 export interface ISendService {

@@ -1,0 +1,26 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[reg] (
+    [id] NVARCHAR(1000) NOT NULL,
+    [dbName] NVARCHAR(1000) NOT NULL,
+    [statusBackup] NVARCHAR(1000) NOT NULL,
+    [statusSend] NVARCHAR(1000) NOT NULL,
+    [createdAt] DATETIME2 NOT NULL,
+    CONSTRAINT [reg_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

@@ -1,7 +1,7 @@
 export interface BackupOptions {
   dbNames: string[];
-  onSuccess: (dbName: string) => void;
-  onFail: (dbName: string, error: Error | number) => void;
+  onSuccess: (dbName: string) => Promise<void>;
+  onFail: (dbName: string, error: Error | number) => Promise<void>;
 }
 
 export interface IBackupService {

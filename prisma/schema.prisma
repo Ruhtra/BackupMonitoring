@@ -1,8 +1,8 @@
 // prisma/schema.prisma
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // Lê a URL do banco de dados do .env
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
 }
 
 generator client {

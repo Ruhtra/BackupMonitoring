@@ -13,6 +13,7 @@ export class SendScpService implements ISendService {
   address: string;
   port: string;
   privateKey: string;
+
   constructor(
     localPath: string,
     remotePath: string,
@@ -34,17 +35,17 @@ export class SendScpService implements ISendService {
 
     try {
       const client = await Client({
-        host: this.address, // substituir pelo seu host
-        username: this.user, // substituir pelo seu usuário
+        host: this.address,
+        username: this.user,
         privateKey: fs.readFileSync(this.privateKey),
-        port: this.port, // porta SSH padrão
+        port: this.port,
       });
 
       for (const fileName of fileNames) {
-        const filePath = path.join(this.localPath, fileName); // substituir pelo caminho do arquivo
+        const filePath = path.join(this.localPath, fileName);
 
         if (!fs.existsSync(filePath)) {
-          onFail(fileName, new Error(`File ${fileName} not found`));
+          await onFail(fileName, new Error(`File ${fileName} not found`)); // Aguarda onFail
           continue;
         }
 
@@ -53,19 +54,22 @@ export class SendScpService implements ISendService {
           path.join(this.remotePath, fileName),
           {
             step: (total, nb, fsize) => {
-              const percentage = ((total / fsize) * 100).toFixed(2); // Calcula a porcentagem e formata para duas casas decimais
-              onProgress(fileName, percentage); // Passa a string formatada com o símbolo de porcentagem
+              const percentage = ((total / fsize) * 100).toFixed(2);
+              onProgress(fileName, percentage);
             },
           }
         );
-        onSuccess(fileName);
+
+        await onSuccess(fileName); // Aguarda onSuccess
       }
 
       client.close();
     } catch (error) {
       console.log(error);
 
-      fileNames.forEach((fileName) => onFail(fileName, error)); // Falha geral
+      for (const fileName of fileNames) {
+        await onFail(fileName, error); // Aguarda onFail geral
+      }
     }
   }
 }

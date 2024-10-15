@@ -7,26 +7,23 @@ import { RegEntity } from "../../Domain/Entities/RegEntity";
 import { BackupRoutineInputDto } from "./BackupRouteDto";
 import { formatDate } from "../../Infrastructure/Services/BackupFirebird/BackupFirebirdService";
 
-const DBS = ["TESTE", "TESTE2"];
-
 export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
 {
-  time: string;
-  private lastUpdate: number = 0; // Para armazenar o último timestamp
+  private lastUpdate: number = 0;
   constructor(
     private regRepository: IRegRepository,
     private backupService: IBackupService,
-    private sendService: ISendService
-  ) {
-    this.time = "00 36 11 * * *";
-  }
+    private sendService: ISendService,
+    private time: string,
+    private DBS: string[]
+  ) {}
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
     try {
       cron.schedule(this.time, async () => {
         await Promise.all(
-          DBS.map(async (db) => {
+          this.DBS.map(async (db) => {
             const reg = RegEntity.create({
               dbName: db,
             });
