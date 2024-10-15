@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,12 +20,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { RegGetAllOutputDto } from "../../Application/RegUseCase/RegGetAll/RegGetAllDto";
+import { useGetSeparacao } from "./Services/Querys/Reg/GetAll";
 
 interface Backup {
   id: string;
   dbName: string;
-  statusBackup: "progress" | "success" | "error" | "idle";
-  statusSend: "progress" | "success" | "error" | "idle";
+  statusBackup: string;
+  statusSend: string;
   createdAt: string;
 }
 
@@ -38,20 +39,15 @@ interface StatusInfo {
 }
 
 export function App() {
-  const [backups, setBackups] = useState<Backup[]>([]);
+  const { data: backupsData = [] } = useGetSeparacao(true);
 
-  useEffect(() => {
-    const eventSource = new EventSource("/api/events");
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data) as Backup[];
-      setBackups(data);
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  const backups: Backup[] = backupsData.map((item: RegGetAllOutputDto) => ({
+    ...item,
+    createdAt:
+      item.createdAt instanceof Date
+        ? item.createdAt.toISOString()
+        : item.createdAt,
+  }));
 
   const groupedBackups = backups.reduce((acc, backup) => {
     const date = format(parseISO(backup.createdAt), "yyyy-MM-dd");
@@ -62,7 +58,7 @@ export function App() {
     return acc;
   }, {} as Record<string, Backup[]>);
 
-  const getStatusInfo = (status: Backup["statusBackup"]): StatusInfo => {
+  const getStatusInfo = (status: string): StatusInfo => {
     switch (status) {
       case "progress":
         return {
@@ -152,7 +148,7 @@ export function App() {
                               },
                             ] as const
                           ).map(({ type, label, icon: StatusIcon }) => {
-                            const status = backup[type];
+                            const status = backup[type as keyof Backup];
                             const {
                               icon: Icon,
                               color,
