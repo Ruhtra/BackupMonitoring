@@ -6,7 +6,7 @@ import {
 } from "../../../Domain/Services/IBackupService";
 import { exec } from "child_process";
 
-export const formatDate = (date) => {
+export const formatDate = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = String(date.getFullYear()).slice(-2); // últimos 2 dígitos
@@ -15,11 +15,11 @@ export const formatDate = (date) => {
 
 export class BackupFirebirdService implements IBackupService {
   private firebirdPath: string;
-  private databaseDir: string;
+  private databaseDirs: string[];
   private outputDir: string;
   private logDir: string;
 
-  constructor(databaseDir: string, outputDir: string) {
+  constructor(databaseDirs: string[], outputDir: string) {
     const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
     this.firebirdPath = path.join(
       programFilesX86,
@@ -28,38 +28,55 @@ export class BackupFirebirdService implements IBackupService {
       "bin",
       "gbak.exe"
     );
-    this.databaseDir = databaseDir;
+    this.databaseDirs = databaseDirs;
     this.outputDir = outputDir;
     this.logDir = path.join(outputDir, "log");
   }
 
-  private generateDatabaseDir(sourceDB: string): string {
-    return path.join(this.databaseDir, sourceDB + ".FDB");
+  private generateDatabaseDir(dbName: string): string | null {
+    for (const dir of this.databaseDirs) {
+      const dbPath = path.join(dir, dbName + ".FDB");
+      if (fs.existsSync(dbPath)) {
+        return dbPath;
+      }
+    }
+    return null;
   }
 
   private verifyDatabaseFile(dbName: string): void {
-    const dbPath = this.generateDatabaseDir(dbName);
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`O arquivo de banco de dados ${dbPath} não existe.`);
+    const matchingPaths = this.databaseDirs
+      .map((dir) => path.join(dir, dbName + ".FDB"))
+      .filter((dbPath) => fs.existsSync(dbPath));
+
+    if (matchingPaths.length === 0) {
+      throw new Error(
+        `O arquivo de banco de dados para ${dbName} não existe em nenhum dos diretórios especificados.`
+      );
+    }
+
+    if (matchingPaths.length > 1) {
+      throw new Error(
+        `Arquivos duplicados encontrados para o banco de dados ${dbName} em múltiplos diretórios: ${matchingPaths.join(
+          ", "
+        )}.`
+      );
     }
   }
 
-  // Função para gerar o nome do arquivo de backup
   private generateBackupFilename = (
     dbName: string,
     isLog: boolean = false
   ): string => {
     const currentDate = new Date();
     const outputDir = isLog ? this.logDir : this.outputDir;
-    const extension = isLog ? "log" : "GBK"; // Define a extensão com base no tipo de arquivo
+    const extension = isLog ? "log" : "GBK";
 
-    // Cria a pasta de backup se ela não existir
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }
 
     const currentBackup = `${dbName}_${formatDate(currentDate)}.${extension}`;
-    return path.join(outputDir, currentBackup); // Retorna o nome do backup (sem manipulação de arquivos)
+    return path.join(outputDir, currentBackup);
   };
 
   private generateUniqueOutputFileName = (
@@ -68,10 +85,9 @@ export class BackupFirebirdService implements IBackupService {
     isLog: boolean = false
   ): string => {
     const outputDir = isLog ? this.logDir : this.outputDir;
-    const extension = isLog ? "log" : "GBK"; // Define a extensão com base no tipo de arquivo
+    const extension = isLog ? "log" : "GBK";
     const currentDate = new Date();
 
-    // Gera uma lista de datas permitidas (dias anteriores até o limite especificado)
     const allowedDates = [];
     for (let i = 0; i <= daysToKeep; i++) {
       const date = new Date();
@@ -81,14 +97,12 @@ export class BackupFirebirdService implements IBackupService {
 
     const currentBackup = this.generateBackupFilename(dbName, isLog);
 
-    // Lê os arquivos existentes na pasta
     const files = fs
       .readdirSync(outputDir)
       .filter((file) => file.endsWith(`.${extension}`));
 
     let backupExists = false;
 
-    // Percorre os arquivos existentes
     files.forEach((file) => {
       const filePath = path.join(outputDir, file);
       const fileDate = file
@@ -97,22 +111,25 @@ export class BackupFirebirdService implements IBackupService {
         .join("_")
         .replace(`.${extension}`, "");
 
-      // Deleta backups que não estão na lista de datas permitidas
       if (!allowedDates.includes(fileDate)) {
         fs.unlinkSync(filePath);
       } else if (path.join(outputDir, file) === currentBackup) {
-        // Se já houver um backup para a data atual, deleta
         fs.unlinkSync(filePath);
         backupExists = true;
       }
     });
 
-    return currentBackup; // Retorna o nome do arquivo de backup único
+    return currentBackup;
   };
 
   private generateCommand(dbName: string): string {
     const outputFilePath = this.generateUniqueOutputFileName(dbName, 3);
     const inputFilePath = this.generateDatabaseDir(dbName);
+    if (!inputFilePath) {
+      throw new Error(
+        `O banco de dados ${dbName} não foi encontrado em nenhum dos diretórios.`
+      );
+    }
     const outputFileLog = this.generateUniqueOutputFileName(dbName, 3, true);
 
     return `"${this.firebirdPath}" -B -b -v -y "${outputFileLog}" -user SYSDBA -password masterkey "${inputFilePath}" "${outputFilePath}"`;
@@ -135,27 +152,28 @@ export class BackupFirebirdService implements IBackupService {
 
         backupProcess.stderr?.on("data", (data) => {
           console.error(`Erro ao fazer backup de ${dbName}: ${data}`);
-          reject(new Error(data)); // Rejeita a promessa em caso de erro
+          reject(new Error(data));
         });
 
         backupProcess.on("close", async (code) => {
           if (code === 0) {
             console.log(`Backup de ${dbName} concluído com sucesso!`);
-            await onSuccess(dbName); // Aguarda o callback onSuccess
+            await onSuccess(dbName);
           } else {
             console.error(
               `Processo de backup de ${dbName} falhou com código ${code}`
             );
-            await onFail(dbName, code); // Aguarda o callback onFail
+            await onFail(dbName, code);
           }
 
           resolve();
         });
       } catch (error) {
-        reject(error); // Em caso de exceção, rejeita a promessa
+        reject(error);
       }
     });
   }
+
   async MakeBackup({
     dbNames,
     onSuccess,

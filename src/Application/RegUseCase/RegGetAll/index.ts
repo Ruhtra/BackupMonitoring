@@ -1,10 +1,13 @@
+import { env } from "../../../env";
 import { RegLocalRepository } from "../../../Infrastructure/Repositories/RegLocalRepository";
 import { RegPrismaRepository } from "../../../Infrastructure/Repositories/RegPrismaRepository";
 import { RegGetAllUseCase } from "./RegGetAllUseCase";
 
-const regLocalRepository = new RegLocalRepository();
-const regPrismaRepository = new RegPrismaRepository();
+const isProduction = env.NODE_ENV === "production";
+const regRepository = isProduction
+  ? new RegPrismaRepository()
+  : new RegLocalRepository();
 
-const regGetAllUseCase = new RegGetAllUseCase(regPrismaRepository);
+const regGetAllUseCase = new RegGetAllUseCase(regRepository);
 
 export { regGetAllUseCase };

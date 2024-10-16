@@ -17,7 +17,16 @@ export class BackupRoutineUseCase
     private sendService: ISendService,
     private time: string,
     private DBS: string[]
-  ) {}
+  ) {
+    this.validDbs();
+  }
+
+  private validDbs() {
+    const uniqueDBS = new Set(this.DBS);
+    if (uniqueDBS.size !== this.DBS.length) {
+      throw new Error("There are repeated database names in the DBS list");
+    }
+  }
 
   async execute({ Notify }: BackupRoutineInputDto): Promise<void> {
     try {

@@ -4,14 +4,22 @@ import { BackupFirebirdService } from "../../Infrastructure/Services/BackupFireb
 import { BackupRoutineUseCase } from "./BackupRoutineUseCase";
 import { RegPrismaRepository } from "../../Infrastructure/Repositories/RegPrismaRepository";
 import { SendScpService } from "../../Infrastructure/Services/SendScp/SendScpService";
+import { env } from "../../env";
 
-const dbDir = path.join("C:", "Dados");
+const dbDir1 = path.join("C:", "Dados");
+const dbDir2 = path.join("C:", "Dados2");
 const outputDir = path.join("C:", "delete");
 const pathRemote = path.join("C:", "BackupAntonioNovo");
 
-const regLocalRepository = new RegLocalRepository();
-const regPrismaRepository = new RegPrismaRepository();
-const backupFirebirdService = new BackupFirebirdService(dbDir, outputDir);
+const isProduction = env.NODE_ENV === "production";
+const regRepository = isProduction
+  ? new RegPrismaRepository()
+  : new RegLocalRepository();
+
+const backupFirebirdService = new BackupFirebirdService(
+  [dbDir1, dbDir2],
+  outputDir
+);
 
 const userProfile = process.env["userProfile"] || "";
 if (userProfile == "") throw new Error("Unable to find privateKey");
@@ -25,11 +33,11 @@ const sendScpService = new SendScpService(
 );
 
 const backupRoutineUseCase = new BackupRoutineUseCase(
-  regPrismaRepository,
+  regRepository,
   backupFirebirdService,
   sendScpService,
-  "59 46 14 * * *",
-  ["TESTE", "TESTE2"]
+  "00 04 10 * * *",
+  ["TESTE", "TESTE2"] as const
 );
 
 export { backupRoutineUseCase };
