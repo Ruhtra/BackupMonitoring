@@ -31,7 +31,7 @@ const sendScpService = new SendScpService(
   env.SCP_USER,
   env.SCP_HOST,
   env.SCP_PORT,
-  path.join(userProfile, env.SSH_KEY_PATH) // Usando a nova variável de ambiente
+  env.SSH_KEY_PATH // Usando a nova variável de ambiente
 );
 
 // Usando o cron job a partir da nova variável de ambiente

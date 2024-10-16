@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node --env-file=.env.production ./dist/index.js",
-    "startPm2": "pm2 start node --name agoravai -- --env-file=.env.production ./dist/index.js",
+    "startPm2": "pm2 start node --name Backup -- --env-file=.env.production ./dist/index.js",
     "dev": "tsx watch --env-file=.env.development src/index.ts"
   },
   "keywords": [],

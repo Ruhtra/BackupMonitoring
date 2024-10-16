@@ -1,8 +1,5 @@
 import z from "zod";
 
-const cronRegex =
-  /^(?:(\*|([0-5]?\d))\s+)?(\*|([01]?\d|2[0-3]))\s+(\*|([1-9]|[12]\d|3[01]))\s+(\*|([1-9]|1[0-2]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\s+(\*|([0-7]|mon|tue|wed|thu|fri|sat|sun))(?:\s+(\*|([0-5]?\d)))?$/;
-
 const envScheme = z.object({
   PORT: z.string(),
   DATABASE_URL: z.string(),
@@ -20,9 +17,7 @@ const envScheme = z.object({
     .refine((names) => new Set(names).size === names.length, {
       message: "BACKUP_NAMES must not contain duplicate names.",
     }),
-  BACKUP_CRON: z.string().refine((value) => cronRegex.test(value), {
-    message: "BACKUP_CRON is not a valid cron expression.",
-  }),
+  BACKUP_CRON: z.string(), // Removida a validação de expressão regular
   SSH_KEY_PATH: z.string(),
 });
 
