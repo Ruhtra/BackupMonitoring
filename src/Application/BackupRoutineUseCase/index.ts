@@ -6,10 +6,11 @@ import { RegPrismaRepository } from "../../Infrastructure/Repositories/RegPrisma
 import { SendScpService } from "../../Infrastructure/Services/SendScp/SendScpService";
 import { env } from "../../env";
 
-const dbDir1 = path.join("C:", "Dados");
-const dbDir2 = path.join("C:", "Dados2");
-const outputDir = path.join("C:", "delete");
-const pathRemote = path.join("C:", "BackupAntonioNovo");
+// Carregando as variáveis de ambiente
+const dbDir1 = path.join(env.DB_DIR1);
+const dbDir2 = path.join(env.DB_DIR2);
+const outputDir = path.join(env.OUTPUT_DIR);
+const pathRemote = path.join(env.PATH_REMOTE);
 
 const isProduction = env.NODE_ENV === "production";
 const regRepository = isProduction
@@ -22,22 +23,24 @@ const backupFirebirdService = new BackupFirebirdService(
 );
 
 const userProfile = process.env["userProfile"] || "";
-if (userProfile == "") throw new Error("Unable to find privateKey");
+if (userProfile === "") throw new Error("Unable to find privateKey");
+
 const sendScpService = new SendScpService(
   outputDir,
   pathRemote,
-  "n3",
-  "187.19.216.31",
-  "2890",
-  path.join(userProfile, ".ssh", "id_rsa")
+  env.SCP_USER,
+  env.SCP_HOST,
+  env.SCP_PORT,
+  path.join(userProfile, env.SSH_KEY_PATH) // Usando a nova variável de ambiente
 );
 
+// Usando o cron job a partir da nova variável de ambiente
 const backupRoutineUseCase = new BackupRoutineUseCase(
   regRepository,
   backupFirebirdService,
   sendScpService,
-  "00 04 10 * * *",
-  ["TESTE", "TESTE2"] as const
+  env.BACKUP_CRON, // Usando a nova variável de ambiente
+  env.BACKUP_NAMES
 );
 
 export { backupRoutineUseCase };
