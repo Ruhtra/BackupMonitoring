@@ -5,7 +5,7 @@ import cron from "node-cron";
 import { IRegRepository } from "../../Domain/Repositories/IRegRepository";
 import { RegEntity } from "../../Domain/Entities/RegEntity";
 import { BackupRoutineInputDto } from "./BackupRouteDto";
-import { formatDate } from "../../Infrastructure/Services/BackupFirebird/BackupFirebirdService";
+import { formatDate } from "../../Infrastructure/Utils";
 
 export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
