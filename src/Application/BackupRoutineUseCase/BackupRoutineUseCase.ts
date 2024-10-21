@@ -33,13 +33,14 @@ export class BackupRoutineUseCase
       cron.schedule(this.time, async () => {
         await Promise.all(
           this.DBS.map(async (db) => {
+            let reg: RegEntity | null = null;
+
             try {
-              const reg = RegEntity.create({
+              reg = RegEntity.create({
                 dbName: db,
               });
 
               reg.StartProcess();
-
               await this.regRepository.Save(reg);
               Notify();
 
@@ -91,27 +92,31 @@ export class BackupRoutineUseCase
                   onProgress: (dbName, percentage) => {
                     const now = Date.now();
                     if (now - this.lastUpdate >= 5000) {
-                      // 5000 milissegundos = 5 segundos
                       console.log(percentage, " to ", dbName);
-                      this.lastUpdate = now; // Atualiza o timestamp
+                      this.lastUpdate = now;
                       Notify();
                     }
                   },
                 });
               }
-
-              reg.FinishProcess();
-              await this.regRepository.Update(reg);
-              Notify();
             } catch (error) {
-              console.log("Erro durante o backup para " + db);
+              console.log(
+                `Erro durante o backup process para ${db}: ${error.message}`
+              );
+            } finally {
+              if (reg) {
+                reg.FinishProcess();
+                await this.regRepository.Update(reg);
+                Notify();
+                console.log(reg);
+              }
             }
           })
         );
       });
-      console.log(`Schedule create to ${this.time}`);
+      console.log(`Schedule created for ${this.time}`);
     } catch (error) {
-      console.error(`Erro durante o backup: ${error.message}`);
+      console.error(`Erro durante o agendamento do backup: ${error.message}`);
     }
   }
 }

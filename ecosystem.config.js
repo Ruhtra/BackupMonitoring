@@ -3,7 +3,7 @@ module.exports = {
       {
         name: "Backup_7403",
         script: "node",
-        args: "--env-file=.env.development ./dist/index.js",
+        args: "--env-file=.env.production ./dist/index.js",
         env: {
           NODE_ENV: "production",
           PORT:  7403
