@@ -7,10 +7,8 @@ import { SendSftpService } from "../../Infrastructure/Services/SendSftp/SendSftp
 import { env } from "../../env";
 
 // Carregando as variáveis de ambiente
-const dbDir1 = path.join(env.DB_DIR1);
-const dbDir2 = path.join(env.DB_DIR2);
+const dbDir = env.DB_DIR.map((e) => path.join(e));
 const outputDir = path.join(env.OUTPUT_DIR);
-const pathRemote = path.join(env.PATH_REMOTE);
 
 const isProduction = env.NODE_ENV === "production";
 const regRepository = isProduction
@@ -18,7 +16,7 @@ const regRepository = isProduction
   : new RegLocalRepository();
 
 const backupFirebirdService = new BackupFirebirdService(
-  [dbDir1, dbDir2],
+  dbDir,
   outputDir,
   env.DAYS_TO_KEEP
 );
@@ -29,7 +27,7 @@ if (userProfile === "") throw new Error("Unable to find privateKey");
 const sendScpService = env.SEND_FILE
   ? new SendSftpService(
       outputDir,
-      pathRemote,
+      path.join(env.PATH_REMOTE),
       env.SFTP_USER,
       env.SFTP_HOST,
       env.SFTP_PORT,

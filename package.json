@@ -13,8 +13,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node --env-file=.env.production ./dist/index.js",
-    "startPm2": "pm2 start node --name Backup -- --env-file=.env.production ./dist/index.js",
+    "start": "npm run build && node --env-file=.env.production ./dist/index.js",
+    "startPm2": "npm run build && npx pm2 start ./ecosystem.config.js",
     "dev": "tsx watch --env-file=.env.development src/index.ts"
   },
   "keywords": [],

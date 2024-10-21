@@ -21,10 +21,13 @@ const envScheme = z
       return num;
     }),
     BACKUP_CRON: z.string(),
-    DB_DIR1: z.string(),
-    DB_DIR2: z.string(),
+    DB_DIR: z
+      .string()
+      .transform((value) => value.split(",").map((name) => name.trim()))
+      .refine((names) => new Set(names).size === names.length, {
+        message: "DB_DIR must not contain duplicate names.",
+      }),
     OUTPUT_DIR: z.string(),
-    PATH_REMOTE: z.string(),
 
     // sendfile
     SEND_FILE: z.string().transform((value) => {
@@ -32,10 +35,15 @@ const envScheme = z
       if (value === "false" || value === "0") return false;
       throw new Error("SEND_FILE must be 'true', 'false', '1', or '0'.");
     }),
+    PATH_REMOTE: z.string().optional(),
     SFTP_USER: z.string().optional(),
     SFTP_HOST: z.string().optional(),
     SFTP_PORT: z.string().optional(),
     SSH_KEY_PATH: z.string().optional(),
+  })
+  .refine((data) => (data.SEND_FILE ? !!data.PATH_REMOTE : true), {
+    message: "PATH_REMOTE is required when SEND_FILE is true.",
+    path: ["PATH_REMOTE"],
   })
   .refine((data) => (data.SEND_FILE ? !!data.SFTP_USER : true), {
     message: "SFTP_USER is required when SEND_FILE is true.",
