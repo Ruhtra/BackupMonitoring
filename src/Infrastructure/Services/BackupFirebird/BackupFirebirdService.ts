@@ -5,15 +5,16 @@ import {
   IBackupService,
 } from "../../../Domain/Services/IBackupService";
 import { exec } from "child_process";
-import { formatDate } from "../../Utils";
+import { formatDateToString } from "../../Utils";
 
 export class BackupFirebirdService implements IBackupService {
   private firebirdPath: string;
   private databaseDirs: string[];
   private outputDir: string;
   private logDir: string;
+  private daysToKeep: number;
 
-  constructor(databaseDirs: string[], outputDir: string) {
+  constructor(databaseDirs: string[], outputDir: string, daysToKeep: number) {
     const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
     this.firebirdPath = path.join(
       programFilesX86,
@@ -25,6 +26,7 @@ export class BackupFirebirdService implements IBackupService {
     this.databaseDirs = databaseDirs;
     this.outputDir = outputDir;
     this.logDir = path.join(outputDir, "log");
+    this.daysToKeep = daysToKeep;
   }
 
   private generateDatabaseDir(dbName: string): string | null {
@@ -69,7 +71,9 @@ export class BackupFirebirdService implements IBackupService {
       fs.mkdirSync(outputDir);
     }
 
-    const currentBackup = `${dbName}_${formatDate(currentDate)}.${extension}`;
+    const currentBackup = `${dbName}_${formatDateToString(
+      currentDate
+    )}.${extension}`;
     return path.join(outputDir, currentBackup);
   };
 
@@ -86,7 +90,7 @@ export class BackupFirebirdService implements IBackupService {
     for (let i = 0; i <= daysToKeep; i++) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
-      allowedDates.push(formatDate(date));
+      allowedDates.push(formatDateToString(date));
     }
 
     const currentBackup = this.generateBackupFilename(dbName, isLog);
@@ -117,14 +121,21 @@ export class BackupFirebirdService implements IBackupService {
   };
 
   private generateCommand(dbName: string): string {
-    const outputFilePath = this.generateUniqueOutputFileName(dbName, 3);
+    const outputFilePath = this.generateUniqueOutputFileName(
+      dbName,
+      this.daysToKeep
+    );
     const inputFilePath = this.generateDatabaseDir(dbName);
     if (!inputFilePath) {
       throw new Error(
         `O banco de dados ${dbName} não foi encontrado em nenhum dos diretórios.`
       );
     }
-    const outputFileLog = this.generateUniqueOutputFileName(dbName, 3, true);
+    const outputFileLog = this.generateUniqueOutputFileName(
+      dbName,
+      this.daysToKeep,
+      true
+    );
 
     return `"${this.firebirdPath}" -B -b -v -y "${outputFileLog}" -user SYSDBA -password masterkey "${inputFilePath}" "${outputFilePath}"`;
   }

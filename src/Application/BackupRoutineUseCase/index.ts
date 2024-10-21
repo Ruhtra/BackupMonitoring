@@ -3,7 +3,7 @@ import { RegLocalRepository } from "../../Infrastructure/Repositories/RegLocalRe
 import { BackupFirebirdService } from "../../Infrastructure/Services/BackupFirebird/BackupFirebirdService";
 import { BackupRoutineUseCase } from "./BackupRoutineUseCase";
 import { RegPrismaRepository } from "../../Infrastructure/Repositories/RegPrismaRepository";
-import { SendScpService } from "../../Infrastructure/Services/SendScp/SendScpService";
+import { SendSftpService } from "../../Infrastructure/Services/SendSftp/SendSftpService";
 import { env } from "../../env";
 
 // Carregando as variáveis de ambiente
@@ -19,19 +19,21 @@ const regRepository = isProduction
 
 const backupFirebirdService = new BackupFirebirdService(
   [dbDir1, dbDir2],
-  outputDir
+  outputDir,
+  env.DAYS_TO_KEEP
 );
 
 const userProfile = process.env["userProfile"] || "";
 if (userProfile === "") throw new Error("Unable to find privateKey");
 
-const sendScpService = new SendScpService(
+const sendScpService = new SendSftpService(
   outputDir,
   pathRemote,
   env.SCP_USER,
   env.SCP_HOST,
   env.SCP_PORT,
-  env.SSH_KEY_PATH // Usando a nova variável de ambiente
+  env.SSH_KEY_PATH,
+  env.DAYS_TO_KEEP
 );
 
 // Usando o cron job a partir da nova variável de ambiente

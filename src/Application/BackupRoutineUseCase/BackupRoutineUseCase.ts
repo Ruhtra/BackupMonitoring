@@ -5,7 +5,7 @@ import cron from "node-cron";
 import { IRegRepository } from "../../Domain/Repositories/IRegRepository";
 import { RegEntity } from "../../Domain/Entities/RegEntity";
 import { BackupRoutineInputDto } from "./BackupRouteDto";
-import { formatDate } from "../../Infrastructure/Utils";
+import { formatDateToString } from "../../Infrastructure/Utils";
 
 export class BackupRoutineUseCase
   implements IUseCase<BackupRoutineInputDto, void>
@@ -67,7 +67,9 @@ export class BackupRoutineUseCase
             Notify();
 
             await this.sendService.execute({
-              fileNames: [reg.dbName + `_${formatDate(new Date())}.GBK`],
+              fileNames: [
+                reg.dbName + `_${formatDateToString(new Date())}.GBK`,
+              ],
               onSuccess: async (dbName) => {
                 if (reg) {
                   reg.FinishSend("success");
