@@ -26,23 +26,31 @@ const backupFirebirdService = new BackupFirebirdService(
 const userProfile = process.env["userProfile"] || "";
 if (userProfile === "") throw new Error("Unable to find privateKey");
 
-const sendScpService = new SendSftpService(
-  outputDir,
-  pathRemote,
-  env.SCP_USER,
-  env.SCP_HOST,
-  env.SCP_PORT,
-  env.SSH_KEY_PATH,
-  env.DAYS_TO_KEEP
-);
+const sendScpService = env.SEND_FILE
+  ? new SendSftpService(
+      outputDir,
+      pathRemote,
+      env.SFTP_USER,
+      env.SFTP_HOST,
+      env.SFTP_PORT,
+      env.SSH_KEY_PATH,
+      env.DAYS_TO_KEEP
+    )
+  : null;
+
+const cronSchedule = isProduction
+  ? env.BACKUP_CRON
+  : `${new Date(Date.now() + 5000).getSeconds()} ${new Date(
+      Date.now() + 5000
+    ).getMinutes()} ${new Date(Date.now() + 5000).getHours()} * * *`;
 
 // Usando o cron job a partir da nova variável de ambiente
 const backupRoutineUseCase = new BackupRoutineUseCase(
   regRepository,
   backupFirebirdService,
-  sendScpService,
-  env.BACKUP_CRON, // Usando a nova variável de ambiente
-  env.BACKUP_NAMES
+  cronSchedule,
+  env.BACKUP_NAMES,
+  sendScpService
 );
 
 export { backupRoutineUseCase };

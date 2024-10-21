@@ -14,9 +14,9 @@ export class BackupRoutineUseCase
   constructor(
     private regRepository: IRegRepository,
     private backupService: IBackupService,
-    private sendService: ISendService,
     private time: string,
-    private DBS: string[]
+    private DBS: string[],
+    private sendService?: ISendService
   ) {
     this.validDbs();
   }
@@ -33,67 +33,79 @@ export class BackupRoutineUseCase
       cron.schedule(this.time, async () => {
         await Promise.all(
           this.DBS.map(async (db) => {
-            const reg = RegEntity.create({
-              dbName: db,
-            });
+            try {
+              const reg = RegEntity.create({
+                dbName: db,
+              });
 
-            await this.regRepository.Save(reg);
-            Notify();
+              reg.StartProcess();
 
-            reg.StartBackup();
-            await this.regRepository.Update(reg);
-            Notify();
+              await this.regRepository.Save(reg);
+              Notify();
 
-            await this.backupService.MakeBackup({
-              dbNames: [db],
-              onSuccess: async (dbName) => {
-                if (reg) {
-                  reg.FinishBackup("success");
-                  await this.regRepository.Update(reg);
-                  Notify();
-                }
-              },
-              onFail: async (dbName) => {
-                if (reg) {
-                  reg.FinishBackup("error");
-                  await this.regRepository.Update(reg);
-                  Notify();
-                }
-              },
-            });
+              reg.StartBackup();
+              await this.regRepository.Update(reg);
+              Notify();
 
-            reg.StartSend();
-            await this.regRepository.Update(reg);
-            Notify();
+              await this.backupService.MakeBackup({
+                dbNames: [db],
+                onSuccess: async (dbName) => {
+                  if (reg) {
+                    reg.FinishBackup("success");
+                    await this.regRepository.Update(reg);
+                    Notify();
+                  }
+                },
+                onFail: async (dbName) => {
+                  if (reg) {
+                    reg.FinishBackup("error");
+                    await this.regRepository.Update(reg);
+                    Notify();
+                  }
+                },
+              });
 
-            await this.sendService.execute({
-              fileNames: [
-                reg.dbName + `_${formatDateToString(new Date())}.GBK`,
-              ],
-              onSuccess: async (dbName) => {
-                if (reg) {
-                  reg.FinishSend("success");
-                  await this.regRepository.Update(reg);
-                  Notify();
-                }
-              },
-              onFail: async (dbName, error) => {
-                if (reg) {
-                  reg.FinishSend("error");
-                  await this.regRepository.Update(reg);
-                  Notify();
-                }
-              },
-              onProgress: (dbName, percentage) => {
-                const now = Date.now();
-                if (now - this.lastUpdate >= 5000) {
-                  // 5000 milissegundos = 5 segundos
-                  console.log(percentage, " to ", dbName);
-                  this.lastUpdate = now; // Atualiza o timestamp
-                  Notify();
-                }
-              },
-            });
+              if (this.sendService) {
+                reg.StartSend();
+                await this.regRepository.Update(reg);
+                Notify();
+
+                await this.sendService.execute({
+                  fileNames: [
+                    reg.dbName + `_${formatDateToString(new Date())}.GBK`,
+                  ],
+                  onSuccess: async (dbName) => {
+                    if (reg) {
+                      reg.FinishSend("success");
+                      await this.regRepository.Update(reg);
+                      Notify();
+                    }
+                  },
+                  onFail: async (dbName, error) => {
+                    if (reg) {
+                      reg.FinishSend("error");
+                      await this.regRepository.Update(reg);
+                      Notify();
+                    }
+                  },
+                  onProgress: (dbName, percentage) => {
+                    const now = Date.now();
+                    if (now - this.lastUpdate >= 5000) {
+                      // 5000 milissegundos = 5 segundos
+                      console.log(percentage, " to ", dbName);
+                      this.lastUpdate = now; // Atualiza o timestamp
+                      Notify();
+                    }
+                  },
+                });
+              }
+
+              reg.FinishProcess();
+              await this.regRepository.Update(reg);
+              Notify();
+            } catch (error) {
+              console.log("Erro durante o backup para " + db);
+            }
           })
         );
       });

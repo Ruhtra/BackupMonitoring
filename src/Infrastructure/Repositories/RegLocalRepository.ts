@@ -36,8 +36,6 @@ export class RegLocalRepository implements IRegRepository {
 
   async Save(RegEntity: RegEntity): Promise<void> {
     const reg = await this.Get(RegEntity.id);
-    console.log(reg);
-
     if (reg) throw new Error(`Reg with id ${RegEntity.id} already exist!`);
 
     RegLocalRepository.localDb.push(RegEntity);

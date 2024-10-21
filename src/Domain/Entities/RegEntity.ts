@@ -43,19 +43,58 @@ export class RegEntity {
     });
   }
 
-  StartBackup() {
-    this.props.statusBackup = "progress";
+  StartProcess() {
+    if (this.props.startBackup != null)
+      throw new Error("Backup process has already started.");
+
     this.props.startBackup = new Date();
   }
+
+  FinishProcess() {
+    if (this.props.startBackup == null)
+      throw new Error("Cannot finish process because it hasn't started.");
+    if (this.props.finishBackup != null)
+      throw new Error("Process has already been finished.");
+
+    this.props.finishBackup = new Date();
+  }
+
+  StartBackup() {
+    if (this.props.startBackup == null)
+      throw new Error(
+        "Cannot start backup because the backup process has not started."
+      );
+
+    this.props.statusBackup = "progress";
+  }
+
   FinishBackup(status: "error" | "success") {
+    if (this.props.startBackup == null)
+      throw new Error(
+        "Cannot start backup because the backup process has not started."
+      );
+
     this.props.statusBackup = status;
   }
+
   StartSend() {
+    if (this.props.startBackup == null)
+      throw new Error(
+        "Cannot start sending because the backup process has not started."
+      );
+
     this.props.statusSend = "progress";
   }
+
   FinishSend(status: "error" | "success") {
+    if (this.props.startBackup == null)
+      throw new Error(
+        "Cannot start sending because the backup process has not started."
+      );
+    if (this.props.statusSend !== "progress")
+      throw new Error("Cannot finish send process because it hasn't started.");
+
     this.props.statusSend = status;
-    this.props.finishBackup = new Date();
   }
 
   public get id(): string {
