@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "module": "node16",
+    "target": "ES2022",
+    "outDir": "./dist/",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "baseUrl": ".", // Base para resolução de módulos
+    "paths": {
+      "backupmonitoring.app": ["backupmonitoring.app/src"] // Resolve o módulo
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/Client"]
+}

@@ -1,0 +1,15 @@
+// tsconfig.json (na raiz do monorepo)
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    {
+      "path": "backupmonitoring.app"
+    },
+    {
+      "path": "backupmonitoring.server"
+    },
+    {
+      "path": "backupmonitoring.client"
+    }
+  ]
+}
