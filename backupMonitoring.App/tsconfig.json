@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "./src",  // Especifica que a base da resolução é 'src' para este projeto
+    "composite": true,
+    "declaration": true,
+    "declarationDir": "./dist/types"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/Client"]
+}

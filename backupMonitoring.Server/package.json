@@ -2,6 +2,7 @@
   "name": "backupmonitoring.server",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node --env-file=.env.production ./dist/index.js",
@@ -28,6 +29,7 @@
     "@types/ssh2-sftp-client": "^9.0.4",
     "prisma": "^5.20.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "backupmonitoring.app": "*"
   }
 }

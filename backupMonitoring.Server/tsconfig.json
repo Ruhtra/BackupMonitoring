@@ -1,14 +1,12 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2023"],
-    "module": "node16",
-    "target": "ES2022",
-    "outDir": "./dist/",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": false,
-    "skipLibCheck": true
+    "baseUrl": ".",  // Especifica que a base da resolução é a raiz do projeto server
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/Client"]
+  "references": [
+    {
+      "path": "../backupmonitoring.app"
+    }
+  ],
+  "include": ["src/**/*.ts"]
 }
