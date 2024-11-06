@@ -1,23 +1,25 @@
 module.exports = {
   apps: [
     {
-      name: "ExpressApp", // Nome da aplicação Express
+      name: "ExpressApp",
+      watch: true,
       script: "node",
       args: "--env-file=.env.production ./dist/index.js",
-      cwd: "./backupMonitoring.server", // Caminho para o servidor Express
+      cwd: "./backupMonitoring.server",
+
       env: {
         NODE_ENV: "production",
-        PORT: 7403, // Porta da aplicação Express
+        PORT: 7403,
       },
     },
     {
-      name: "ViteReactApp", // Nome da aplicação React em produção
+      name: "ViteReactApp",
+      watch: true,
       script: "serve",
-      args: "./dist 7404", // Serve a pasta `dist` como uma SPA na porta 7404
-      cwd: "./backupMonitoring.client", // Caminho para a pasta do projeto React
+      args: "./dist 7404",
+      cwd: "./backupMonitoring.client",
       env: {
-        // NODE_ENV: "production",
-        // PORT: 7404, // Porta da aplicação React
+        NODE_ENV: "production",
       },
     },
   ],
