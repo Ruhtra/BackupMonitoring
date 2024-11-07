@@ -1,11 +1,11 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",  // Especifica que a base da resolução é a raiz do projeto server
+    "baseUrl": "." // Especifica que a base da resolução é a raiz do projeto server
   },
   "references": [
     {
-      "path": "../backupmonitoring.app"
+      // "path": "../backupmonitoring.app"
     }
   ],
   "include": ["src/**/*.ts"]
