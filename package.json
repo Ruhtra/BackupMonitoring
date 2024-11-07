@@ -13,7 +13,8 @@
   "workspaces": [
     "backupMonitoring.server",
     "backupMonitoring.client",
-    "backupMonitoring.app"
+    "backupMonitoring.app",
+    "backupMonitoring.App"
   ],
   "devDependencies": {
     "dotenv": "^16.4.5",

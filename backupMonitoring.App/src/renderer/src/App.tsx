@@ -1,12 +1,5 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { Button } from './components/ui/button'
 
-function App(): JSX.Element {
-  return (
-    <>
-      <h1 className="bg-red-500">ohmaga</h1>
-    </>
-  )
+export function App() {
+  return <Button>ohmaga</Button>
 }
-
-export default App
