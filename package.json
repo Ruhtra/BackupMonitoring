@@ -2,19 +2,22 @@
   "name": "backupmonitoring",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "dev:client": "npm run dev -w backupMonitoring.client",
     "dev:server": "npm run dev -w backupMonitoring.server",
-    "dev:all": "npm-run-all --parallel dev:client dev:server"
+    "dev:all": "npm-run-all --parallel dev:client dev:server",
+    "dev-e": "npm run dev -w backupMonitoring.app"
   },
   "author": "ruhtra",
   "license": "ISC",
   "description": "",
   "workspaces": [
-    "backupMonitoring.server",
-    "backupMonitoring.client",
-    "backupMonitoring.app",
-    "backupMonitoring.shared"
+    "backupMonitoring.Server",
+    "backupMonitoring.Client",
+    "backupMonitoring.App",
+    "backupMonitoring.Shared",
+    "backupMonitoring.Backup"
   ],
   "dependencies": {
     "electron": "^33.1.0"

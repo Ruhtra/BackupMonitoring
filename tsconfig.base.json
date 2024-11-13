@@ -10,9 +10,11 @@
     "skipLibCheck": true,
     "baseUrl": ".", // Base para resolução de módulos
     "paths": {
-      "backupmonitoring.app": ["backupmonitoring.app/src"] // Resolve o módulo
+      "backupmonitoring.backup/*": ["backupmonitoring.backup/src/*"],
+      "backupmonitoring.shared/*": ["backupmonitoring.shared/src/*"]
+      // "backupmonitoring.app": ["backupmonitoring.app/src"], // Resolve o módulo
+      // "backupmonitoring.backup/*": ["backupmonitoring.backup/src/*"]
     }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/Client"]
+  "include": ["src/**/*.ts"]
 }

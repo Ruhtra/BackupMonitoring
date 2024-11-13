@@ -2,7 +2,8 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".", // Especifica que a base da resolução é a raiz do projeto server
+    "rootDir": "./src",
     "composite": true
   },
-  "include": ["**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

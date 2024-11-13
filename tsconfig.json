@@ -9,6 +9,12 @@
       "path": "backupmonitoring.server"
     },
     {
+      "path": "backupmonitoring.backup"
+    },
+    {
+      "path": "backupmonitoring.shared"
+    },
+    {
       "path": "backupmonitoring.client"
     }
   ]
