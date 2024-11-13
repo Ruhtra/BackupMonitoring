@@ -1,5 +1,6 @@
 appId: com.electron.app
 productName: app
+electronVersion: '33.1.0'
 directories:
   buildResources: build
 files:
