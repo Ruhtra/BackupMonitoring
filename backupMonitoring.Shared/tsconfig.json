@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "." // Especifica que a base da resolução é a raiz do projeto server
+  },
+  "include": ["**/*.ts"]
+}
