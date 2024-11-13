@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useGetSeparacao } from "./Services/Querys/Reg/GetAll";
-import { RegGetAllOutputDto } from "./Dtos/RegGetAllDto";
+import { RegGetAllOutputDto } from "backupmonitoring.shared/Dtos/RegAllDto";
 
 interface Backup
   extends Omit<
@@ -59,14 +59,17 @@ export function App() {
         : item.finishBackup,
   }));
 
-  const groupedBackups = backups.reduce((acc, backup) => {
-    const date = format(parseISO(backup.createdAt), "yyyy-MM-dd");
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(backup);
-    return acc;
-  }, {} as Record<string, Backup[]>);
+  const groupedBackups = backups.reduce(
+    (acc, backup) => {
+      const date = format(parseISO(backup.createdAt), "yyyy-MM-dd");
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(backup);
+      return acc;
+    },
+    {} as Record<string, Backup[]>
+  );
 
   const getStatusInfo = (status: string | null): StatusInfo => {
     switch (status) {
