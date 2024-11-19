@@ -10,5 +10,8 @@
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "backupmonitoring.shared": "^1.0.0"
+  }
 }

@@ -1,21 +1,25 @@
-// tsconfig.json (na raiz do monorepo)
 {
-  "extends": "./tsconfig.base.json",
-  "references": [
-    {
-      "path": "backupmonitoring.app"
-    },
-    {
-      "path": "backupmonitoring.server"
-    },
-    {
-      "path": "backupmonitoring.backup"
-    },
-    {
-      "path": "backupmonitoring.shared"
-    },
-    {
-      "path": "backupmonitoring.client"
+  "compilerOptions": {
+    "module": "ES2022",
+    "target": "es6",
+    "declaration": true,
+    "composite": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "backupmonitoring.shared/*": ["./backupMonitoring.Shared/src/*"],
+      "backupmonitoring.backup/*": ["./backupMonitoring.Backup/src/*"]
     }
+  },
+  "include": [
+    "backupMonitoring.Backup/src/**/*",
+    "backupMonitoring.Shared/src/**/*",
+    "backupMonitoring.App/src/**/*"
+  ],
+  "references": [
+    { "path": "./backupMonitoring.Shared" },
+    { "path": "./backupMonitoring.Backup" },
+    { "path": "./backupMonitoring.App" }
   ]
 }

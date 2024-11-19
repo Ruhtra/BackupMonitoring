@@ -1,14 +1,8 @@
 {
   "name": "backupmonitoring.shared",
   "version": "1.0.0",
-  "private": true,
-  "devDependencies": {
-    "typescript": "^5.6.3"
-  },
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "build": "tsc"
+  }
 }
