@@ -10,7 +10,8 @@
     "paths": {
       "backupmonitoring.shared/*": ["./backupMonitoring.Shared/src/*"],
       "backupmonitoring.backup/*": ["./backupMonitoring.Backup/src/*"]
-    }
+    },
+    "types": ["node"]
   },
   "include": [
     "backupMonitoring.Backup/src/**/*",

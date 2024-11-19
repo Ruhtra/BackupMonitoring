@@ -3,6 +3,8 @@ import { app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
+import { BackupUseCase } from "backupmonitoring.backup/src/main";
+
 // const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The built directory structure
@@ -28,6 +30,11 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null;
 
 function createWindow() {
+  console.log("create window");
+
+  const a = new BackupUseCase();
+  a.execute();
+
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
