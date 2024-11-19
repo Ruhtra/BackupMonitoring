@@ -1,6 +1,6 @@
 {
   "name": "backupmonitoring",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "main": "index.js",
   "private": true,
   "scripts": {
@@ -12,19 +12,18 @@
   "author": "ruhtra",
   "license": "ISC",
   "description": "",
-  "workspaces": {
-   "packages": [
+ "workspaces": {
+  "packages": [
     "backupMonitoring.Server",
     "backupMonitoring.Client",
     "backupMonitoring.Shared",
     "backupMonitoring.Backup",
     "backupMonitoring.App"
-   ],
-   "nohoist": [
-   ]
-  },
+  ]
+},
+
   "dependencies": {
-    "electron": "^30.0.1"
+    "electron": "^33.2.0"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
