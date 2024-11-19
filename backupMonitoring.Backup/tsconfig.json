@@ -1,9 +1,10 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": ["../tsconfig.json"],
   "compilerOptions": {
-    "baseUrl": ".", // Especifica que a base da resolução é a raiz do projeto server
-    "rootDir": "./src",
-    "composite": true
-  },
-  "include": ["src/**/*.ts"]
+    "composite": true,
+    "declaration": true, // Gera tipos (.d.ts)
+    "declarationMap": true, // Gera mapa de tipos (.d.ts.map) para facilitar o debugging
+    "outDir": "./dist", // Define o diretório de saída
+    "types": [] // Pode adicionar tipos externos aqui, se necessário
+  }
 }

@@ -12,15 +12,19 @@
   "author": "ruhtra",
   "license": "ISC",
   "description": "",
-  "workspaces": [
+  "workspaces": {
+   "packages": [
     "backupMonitoring.Server",
     "backupMonitoring.Client",
-    "backupMonitoring.App",
     "backupMonitoring.Shared",
-    "backupMonitoring.Backup"
-  ],
+    "backupMonitoring.Backup",
+    "backupMonitoring.App"
+   ],
+   "nohoist": [
+   ]
+  },
   "dependencies": {
-    "electron": "^33.1.0"
+    "electron": "^30.0.1"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
