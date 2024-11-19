@@ -4,7 +4,6 @@
     "composite": true,
     "declaration": true, // Gera tipos (.d.ts)
     "declarationMap": true, // Gera mapa de tipos (.d.ts.map) para facilitar o debugging
-    "outDir": "./dist", // Define o diretório de saída
-    "types": [] // Pode adicionar tipos externos aqui, se necessário
+    "outDir": "./dist" // Define o diretório de saída
   }
 }
