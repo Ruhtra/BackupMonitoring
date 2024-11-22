@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Menu, Tray } from "electron";
 // import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -28,18 +28,23 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   : RENDERER_DIST;
 
 let win: BrowserWindow | null;
+let isQuiting = false;
 
 function createWindow() {
   console.log("create window");
 
-  const a = new BackupUseCase();
-  a.execute();
+  // const a = new BackupUseCase();
+  // a.execute();
 
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
+      nodeIntegration: true
     },
+    width: 400,
+    height: 600,
+    show: false
   });
 
   // Test active push message to Renderer-process.
@@ -53,6 +58,42 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
+  
+
+  //Carrega na bandeja do windows
+  const tray = new Tray(path.join(process.env.VITE_PUBLIC, "electron-vite.png"))
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Abrir configurações',
+      click: () => {
+        win?.show()
+      }
+    },
+    {
+      label: 'Fechar',
+      click: () => {
+        isQuiting = true
+        app.quit()
+      }
+    }
+  ])
+
+  tray.setToolTip('Aplicação de backup')
+  tray.setContextMenu(contextMenu)
+
+  tray.on('click', () => {
+    win?.isVisible() ? win.hide() : win?.show()
+  })
+
+  win.on('close', (e) => {
+    if (!isQuiting) {
+      e.preventDefault()
+      win?.hide()
+    }
+  })
+
+
+
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
