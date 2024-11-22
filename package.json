@@ -12,18 +12,20 @@
   "author": "ruhtra",
   "license": "ISC",
   "description": "",
- "workspaces": {
-  "packages": [
-    "backupMonitoring.Server",
-    "backupMonitoring.Client",
-    "backupMonitoring.Shared",
-    "backupMonitoring.Backup",
-    "backupMonitoring.App"
-  ]
-},
-
+  "workspaces": {
+    "packages": [
+      "backupMonitoring.Server",
+      "backupMonitoring.Client",
+      "backupMonitoring.Shared",
+      "backupMonitoring.Backup",
+      "backupMonitoring.App"
+    ]
+  },
   "dependencies": {
-    "electron": "^33.2.0"
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-switch": "^1.1.1",
+    "electron": "^33.2.0",
+    "framer-motion": "^11.11.17"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
