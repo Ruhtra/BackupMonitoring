@@ -13,7 +13,7 @@ declare namespace NodeJS {
      * │ │ ├── main.js
      * │ │ └── preload.js
      * │
-     * ```
+     * ``` 
      */
     APP_ROOT: string
     /** /dist/ or /public/ */
@@ -21,7 +21,14 @@ declare namespace NodeJS {
   }
 }
 
-// Used in Renderer process, expose in `preload.ts`
+// Expõe a API do `ipcRenderer` com métodos personalizados, como `getSettings`
+// no ambiente do Electron.
 interface Window {
-  ipcRenderer: import('electron').IpcRenderer
+  ipcRenderer: {
+    on: (...args: Parameters<typeof ipcRenderer.on>) => ReturnType<typeof ipcRenderer.on>;
+    off: (...args: Parameters<typeof ipcRenderer.off>) => ReturnType<typeof ipcRenderer.off>;
+    send: (...args: Parameters<typeof ipcRenderer.send>) => ReturnType<typeof ipcRenderer.send>;
+    invoke: (...args: Parameters<typeof ipcRenderer.invoke>) => ReturnType<typeof ipcRenderer.invoke>;
+    getSettings: () => import('../electron/store').Settings;  // Tipando a função `getSettings`
+  };
 }

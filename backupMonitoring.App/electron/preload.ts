@@ -18,6 +18,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
+  
+  getSettings: () => ipcRenderer.invoke('get-settings'), // Obtém as configurações do processo principal
+  setSettings: (newSettings: { theme: string; fontSize: number }) =>
+    ipcRenderer.invoke('set-settings', newSettings), // Envia novas configurações para o processo principal
 
   // You can expose other APTs you need here.
   // ...
