@@ -1,6 +1,6 @@
 import { api } from "@/Services/Api";
 import { useQuery } from "@tanstack/react-query";
-import { RegGetAllOutputDto } from "backupmonitoring.shared/Dtos/RegAllDto";
+import { RegGetAllOutputDto } from "backupmonitoring.shared/src/Dtos/RegAllDto";
 
 export function useGetSeparacao(enabled: boolean) {
   const query = useQuery<RegGetAllOutputDto[]>({

@@ -5,11 +5,13 @@ import fs from "fs";
 
 export class BackupUseCase implements IUseCase<void, void> {
   constructor() {
-    const time = "12 15 * * *";
-    console.log("configured to " + time);
+    const trigged_time = "00 12 15 * * *";
+    const inHour = trigged_time.split(" ");
+    const timeString = `${inHour[0]}:${inHour[1]}:${inHour[0]}`;
+    console.log("configured to " + timeString);
 
-    cron.schedule(time, async () => {
-      console.log("Cron job triggered at 15:00");
+    cron.schedule(trigged_time, async () => {
+      console.log(`Cron job triggered at ${timeString}`);
       this.createFile();
     });
   }
