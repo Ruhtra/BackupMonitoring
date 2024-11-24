@@ -1,9 +1,13 @@
-import { app, BrowserWindow, Menu, Tray } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
 // import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import Store from "electron-store";
 
-import { BackupUseCase } from "backupmonitoring.backup/src/main";
+
+
+
+// import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
 // const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +34,52 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null;
 let isQuiting = false;
 
+// Defina a estrutura das configurações
+interface Settings {
+  theme: string;
+  fontSize: number;
+}
+
+
+// Crie uma instância do Store
+const store = new Store<Settings>();
+
+// Função para acessar as configurações
+const getSettings = (): Settings => store.store;
+
+// Função para atualizar as configurações
+const setSettings = (newSettings: Settings): void => {
+  store.set(newSettings);
+};
+
+// Função para verificar se é a primeira execução
+const isFirstExecution = (): boolean => {
+  const firstRun = store.get('firstRun', true); // Verifica se 'firstRun' é true
+  if (firstRun) {
+    store.set('firstRun', false); // Marca como não sendo a primeira execução
+    return true; // Indica que é a primeira execução
+  }
+  return false; // Não é a primeira execução
+};
+
+// Configuração padrão
+const defaultSettings: Settings = {
+  theme: 'light',
+  fontSize: 14
+};
+
+// Função para definir configurações iniciais se for a primeira execução
+const initializeSettings = () => {
+  if (isFirstExecution()) {
+    // Se for a primeira execução, define as configurações padrão
+    store.set(defaultSettings);
+  } else {
+    // Se não for a primeira execução, as configurações já estão salvas
+    console.log("Settings already exist, no need to reset.");
+  }
+};
+
+
 function createWindow() {
   console.log("create window");
 
@@ -40,12 +90,24 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
-      nodeIntegration: true
+        contextIsolation: true,
+      nodeIntegration: false
     },
     width: 400,
     height: 600,
     show: false
   });
+
+  // Inicializar as configurações
+  initializeSettings();
+  
+  // Defina a comunicação IPC
+  ipcMain.handle('get-settings', () => getSettings()); // Quando o renderer pedir as configurações
+  ipcMain.handle('set-settings', (_event, newSettings: Settings) => setSettings(newSettings)); // Quando o renderer enviar novas configurações
+
+
+  // const settings = getSettings();  // Obtém as configurações
+  // console.log(settings);  // Mostra as configurações no console
 
   // Test active push message to Renderer-process.
   win.webContents.on("did-finish-load", () => {

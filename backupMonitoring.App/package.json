@@ -2,6 +2,7 @@
   "name": "backupmonitoring.app",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
@@ -9,22 +10,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "electron-store": "^10.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/electron-store": "*",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "electron": "^33.2.0",
+    "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
-    "electron": "^33.2.0",
     "vite": "^5.1.6",
-    "electron-builder": "^24.13.3",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5"
   },
