@@ -1,11 +1,8 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, Tray } from "electron";
 // import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import Store from "electron-store";
-
-
-
 
 // import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
@@ -40,7 +37,6 @@ interface Settings {
   fontSize: number;
 }
 
-
 // Crie uma instância do Store
 const store = new Store<Settings>();
 
@@ -54,9 +50,9 @@ const setSettings = (newSettings: Settings): void => {
 
 // Função para verificar se é a primeira execução
 const isFirstExecution = (): boolean => {
-  const firstRun = store.get('firstRun', true); // Verifica se 'firstRun' é true
+  const firstRun = store.get("firstRun", true); // Verifica se 'firstRun' é true
   if (firstRun) {
-    store.set('firstRun', false); // Marca como não sendo a primeira execução
+    store.set("firstRun", false); // Marca como não sendo a primeira execução
     return true; // Indica que é a primeira execução
   }
   return false; // Não é a primeira execução
@@ -64,8 +60,8 @@ const isFirstExecution = (): boolean => {
 
 // Configuração padrão
 const defaultSettings: Settings = {
-  theme: 'light',
-  fontSize: 14
+  theme: "light",
+  fontSize: 14,
 };
 
 // Função para definir configurações iniciais se for a primeira execução
@@ -79,7 +75,6 @@ const initializeSettings = () => {
   }
 };
 
-
 function createWindow() {
   console.log("create window");
 
@@ -90,21 +85,49 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
-        contextIsolation: true,
-      nodeIntegration: false
+      contextIsolation: true,
+      nodeIntegration: false,
     },
     width: 400,
     height: 600,
-    show: false
+    show: false,
   });
 
   // Inicializar as configurações
   initializeSettings();
-  
-  // Defina a comunicação IPC
-  ipcMain.handle('get-settings', () => getSettings()); // Quando o renderer pedir as configurações
-  ipcMain.handle('set-settings', (_event, newSettings: Settings) => setSettings(newSettings)); // Quando o renderer enviar novas configurações
 
+  // Defina a comunicação IPC
+  ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
+  ipcMain.handle("set-settings", (_event, newSettings: Settings) =>
+    setSettings(newSettings)
+  ); // Quando o renderer enviar novas configurações
+  ipcMain.handle(
+    "dialog:openFile",
+    async (_event, type: "file" | "folder" | "any") => {
+      if (type === "file") {
+        const result = await dialog.showOpenDialog({
+          properties: ["openFile"], // Permite selecionar arquivos e pastas
+          filters: [
+            {
+              name: "Firebird File (.FDB)",
+              extensions: ["fdb", "FDB"], // Filtrando para arquivos com extensões relacionadas ao SSH
+            },
+          ],
+        });
+        return result.filePaths;
+      } else if (type == "folder") {
+        const result = await dialog.showOpenDialog({
+          properties: ["openFile", "openDirectory"], // Permite selecionar arquivos e pastas
+        });
+        return result.filePaths;
+      } else if (type == "any") {
+        const result = await dialog.showOpenDialog({
+          properties: ["openFile"], // Permite selecionar arquivos e pastas
+        });
+        return result.filePaths;
+      }
+    }
+  );
 
   // const settings = getSettings();  // Obtém as configurações
   // console.log(settings);  // Mostra as configurações no console
@@ -120,42 +143,40 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
-  
 
   //Carrega na bandeja do windows
-  const tray = new Tray(path.join(process.env.VITE_PUBLIC, "electron-vite.png"))
+  const tray = new Tray(
+    path.join(process.env.VITE_PUBLIC, "electron-vite.png")
+  );
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Abrir configurações',
+      label: "Abrir configurações",
       click: () => {
-        win?.show()
-      }
+        win?.show();
+      },
     },
     {
-      label: 'Fechar',
+      label: "Fechar",
       click: () => {
-        isQuiting = true
-        app.quit()
-      }
-    }
-  ])
+        isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
 
-  tray.setToolTip('Aplicação de backup')
-  tray.setContextMenu(contextMenu)
+  tray.setToolTip("Aplicação de backup");
+  tray.setContextMenu(contextMenu);
 
-  tray.on('click', () => {
-    win?.isVisible() ? win.hide() : win?.show()
-  })
+  tray.on("click", () => {
+    win?.isVisible() ? win.hide() : win?.show();
+  });
 
-  win.on('close', (e) => {
+  win.on("close", (e) => {
     if (!isQuiting) {
-      e.preventDefault()
-      win?.hide()
+      e.preventDefault();
+      win?.hide();
     }
-  })
-
-
-
+  });
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
