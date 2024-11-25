@@ -2,7 +2,13 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, Tray } from "electron";
 // import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import Store from "electron-store";
+import {
+  defaultSettings,
+  getSettings,
+  setSettings,
+  SettingsStore,
+  store,
+} from "./store";
 
 // import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
@@ -31,23 +37,6 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null;
 let isQuiting = false;
 
-// Defina a estrutura das configurações
-interface Settings {
-  theme: string;
-  fontSize: number;
-}
-
-// Crie uma instância do Store
-const store = new Store<Settings>();
-
-// Função para acessar as configurações
-const getSettings = (): Settings => store.store;
-
-// Função para atualizar as configurações
-const setSettings = (newSettings: Settings): void => {
-  store.set(newSettings);
-};
-
 // Função para verificar se é a primeira execução
 const isFirstExecution = (): boolean => {
   const firstRun = store.get("firstRun", true); // Verifica se 'firstRun' é true
@@ -56,12 +45,6 @@ const isFirstExecution = (): boolean => {
     return true; // Indica que é a primeira execução
   }
   return false; // Não é a primeira execução
-};
-
-// Configuração padrão
-const defaultSettings: Settings = {
-  theme: "light",
-  fontSize: 14,
 };
 
 // Função para definir configurações iniciais se for a primeira execução
@@ -98,7 +81,7 @@ function createWindow() {
 
   // Defina a comunicação IPC
   ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
-  ipcMain.handle("set-settings", (_event, newSettings: Settings) =>
+  ipcMain.handle("set-settings", (_event, newSettings: SettingsStore) =>
     setSettings(newSettings)
   ); // Quando o renderer enviar novas configurações
   ipcMain.handle(
