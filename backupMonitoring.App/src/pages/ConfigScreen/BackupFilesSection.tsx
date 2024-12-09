@@ -25,7 +25,7 @@ export function BackupFilesSection({ form }: { form: UseFormReturn<any> }) {
     const currentFiles = form.getValues("backupFiles");
     form.setValue(
       "backupFiles",
-      currentFiles.filter((_, i) => i !== index)
+      currentFiles.filter((_: any, i: any) => i !== index)
     );
   };
 
@@ -51,6 +51,7 @@ export function BackupFilesSection({ form }: { form: UseFormReturn<any> }) {
                 >
                   <span className="truncate flex-1">{file}</span>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveFile(index)}
@@ -60,7 +61,7 @@ export function BackupFilesSection({ form }: { form: UseFormReturn<any> }) {
                 </div>
               ))}
             </div>
-            <Button onClick={handleExplorer} className="w-full">
+            <Button type="button" onClick={handleExplorer} className="w-full">
               Adicionar Arquivo
               <FilePlus className="ml-2 h-4 w-4" />
             </Button>

@@ -14,7 +14,11 @@ export function ActionButtons() {
       className="flex justify-between pt-4"
     >
       <Link to={".."}>
-        <Button variant="outline" className="flex items-center space-x-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="flex items-center space-x-2"
+        >
           <ArrowLeft className="w-5 h-5" />
           <span>Voltar</span>
         </Button>

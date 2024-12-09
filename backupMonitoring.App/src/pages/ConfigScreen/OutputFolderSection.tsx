@@ -41,6 +41,7 @@ export function OutputFolderSection({ form }: { form: UseFormReturn<any> }) {
                 className="flex-1"
               />
               <Button
+                type="button"
                 onClick={handleFolderSelect}
                 variant="outline"
                 className="ml-2"
