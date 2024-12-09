@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Loader2, Settings } from "lucide-react";
-import { addDays, addHours, differenceInSeconds, format } from "date-fns";
+import { Clock, Settings } from "lucide-react";
+import { addDays, differenceInSeconds, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";

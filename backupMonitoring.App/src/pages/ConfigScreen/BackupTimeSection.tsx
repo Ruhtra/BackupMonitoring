@@ -33,7 +33,7 @@ export function BackupTimeSection({ form }: { form: UseFormReturn<any> }) {
       <FormField
         control={form.control}
         name="backupTime"
-        render={({ field }) => (
+        render={({}) => (
           <FormItem>
             <FormLabel htmlFor="backupTime">Horário do Backup Diário</FormLabel>
             <Input
