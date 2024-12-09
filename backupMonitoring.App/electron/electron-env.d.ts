@@ -41,7 +41,25 @@ interface Window {
 
     // Função customizada para obter configurações
     getSettings: () => import("../electron/store").Settings; // Tipando a função `getSettings` com a importação de Settings
-    setSettings: (newSettings: { theme: string; fontSize: number }) => void;
+    setSettings: (newSettings: {
+      theme: string;
+      fontSize: number;
+      backupConfig: {
+        backupFiles: string[];
+        backupTime: string;
+        outputFolder: string;
+        saveRemotely: boolean;
+        remoteConfig?:
+          | {
+              pathRemote: string;
+              sftpUser: string;
+              sftpHost: string;
+              sftpPort: string;
+              sshKeyPath: string;
+            }
+          | undefined;
+      };
+    }) => void;
 
     openFileDialog: (type: "file" | "folder" | "any") => Promise<string[]>; // Função para abrir o diálogo de seleção de arquivos
   };

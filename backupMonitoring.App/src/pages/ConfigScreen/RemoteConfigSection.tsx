@@ -101,6 +101,7 @@ export function RemoteConfigSection({ form }: { form: UseFormReturn<any> }) {
                 <div className="flex mt-1">
                   <Input id="sshKeyPath" {...field} className="flex-1" />
                   <Button
+                    type="button"
                     onClick={handleSelectSshKey}
                     variant="outline"
                     className="ml-2"
