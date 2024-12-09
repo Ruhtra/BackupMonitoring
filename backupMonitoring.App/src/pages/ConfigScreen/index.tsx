@@ -14,6 +14,24 @@ import { ActionButtons } from "./ActionButtons";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
+//puxar da shared
+export interface SettingsStore {
+  backupConfig: {
+    backupFiles: string[];
+    dayToKeep: number;
+    backupCron: string;
+    outputFolder: string;
+
+    sendFile: boolean;
+    pathRemote?: string;
+    sftpUser?: string;
+    sftpHost?: string;
+    sftpPort?: string;
+    sshKeyPath?: string;
+  };
+  theme: string;
+}
+
 const formSchema = z.object({
   backupFiles: z.array(z.string()),
   backupTime: z.string(),
@@ -39,7 +57,7 @@ export function ConfigScreen() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       backupFiles: [],
-      backupTime: "00:00",
+      backupTime: "00 00 * * *",
       outputFolder: "",
       saveRemotely: false,
       remoteConfig: {
@@ -56,9 +74,23 @@ export function ConfigScreen() {
     if (window.ipcRenderer) {
       window.ipcRenderer
         .getSettings()
-        .then(({ backupConfig }: { backupConfig: configType }) => {
+        .then(({ backupConfig }: SettingsStore) => {
+          console.log("conf");
+
           console.log(backupConfig);
-          form.reset(backupConfig);
+          form.reset({
+            backupFiles: backupConfig.backupFiles,
+            backupTime: backupConfig.backupCron,
+            outputFolder: backupConfig.outputFolder,
+            saveRemotely: backupConfig.sendFile,
+            remoteConfig: {
+              pathRemote: backupConfig.pathRemote,
+              sftpUser: backupConfig.sftpUser,
+              sftpHost: backupConfig.sftpHost,
+              sftpPort: backupConfig.sftpPort,
+              sshKeyPath: backupConfig.sshKeyPath,
+            },
+          });
           setIsLoading(false);
         })
         .catch((error: any) => {
@@ -67,14 +99,23 @@ export function ConfigScreen() {
         });
     }
   }, []);
-
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log("Configurações salvas:", values);
 
     window.ipcRenderer.setSettings({
-      backupConfig: values,
+      backupConfig: {
+        backupCron: values.backupTime,
+        backupFiles: values.backupFiles,
+        dayToKeep: 3,
+        outputFolder: values.outputFolder,
+        sendFile: values.saveRemotely,
+        pathRemote: values.remoteConfig?.pathRemote,
+        sftpUser: values.remoteConfig?.sftpUser,
+        sftpHost: values.remoteConfig?.sftpHost,
+        sftpPort: values.remoteConfig?.sftpPort,
+        sshKeyPath: values.remoteConfig?.sshKeyPath,
+      },
       theme: "dark",
-      fontSize: 16,
     });
 
     navigate("/");

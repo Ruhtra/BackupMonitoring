@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   defaultSettings,
   getSettings,
+  resetSettings,
   setSettings,
   SettingsStore,
   store,
@@ -13,6 +14,17 @@ import {
 import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
 // const require = createRequire(import.meta.url);
+
+const APP_VERSION = app.getVersion(); // Função para verificar se a versão mudou
+const isVersionChanged = (): boolean => {
+  const storedVersion = store.get("appVersion", null);
+  if (storedVersion !== APP_VERSION) {
+    store.set("appVersion", APP_VERSION); // Atualiza a versão armazenada
+    return true; // A versão foi alterada
+  }
+  return false; // A versão não foi alterada
+};
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The built directory structure
 //
@@ -56,13 +68,15 @@ const initializeSettings = () => {
     // Se não for a primeira execução, as configurações já estão salvas
     console.log("Settings already exist, no need to reset.");
   }
+  if (isVersionChanged()) {
+    resetSettings();
+  } else {
+    console.log("Version equal");
+  }
 };
 
 function createWindow() {
   console.log("create window");
-
-  const a = new BackupUseCase("0 0 * * * *");
-  a.execute();
 
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
@@ -78,6 +92,11 @@ function createWindow() {
 
   // Inicializar as configurações
   initializeSettings();
+
+  const b = getSettings();
+  console.log(b);
+
+  const a = new BackupUseCase(b.backupConfig.backupCron);
 
   // Defina a comunicação IPC
   ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
