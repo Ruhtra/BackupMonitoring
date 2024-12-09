@@ -1,5 +1,25 @@
 /// <reference types="vite-plugin-electron/electron-env" />
 
+//puxar da shared
+interface SettingsStore {
+  backupConfig: {
+    backupFiles: string[];
+    dayToKeep: number;
+    backupCron: string;
+    outputFolder: string;
+
+    sendFile: boolean;
+    pathRemote?: string;
+    sftpUser?: string;
+    sftpHost?: string;
+    sftpPort?: string;
+    sshKeyPath?: string;
+  };
+  theme: string;
+}
+
+
+
 declare namespace NodeJS {
   interface ProcessEnv {
     /**
@@ -41,25 +61,7 @@ interface Window {
 
     // Função customizada para obter configurações
     getSettings: () => import("../electron/store").Settings; // Tipando a função `getSettings` com a importação de Settings
-    setSettings: (newSettings: {
-      theme: string;
-      fontSize: number;
-      backupConfig: {
-        backupFiles: string[];
-        backupTime: string;
-        outputFolder: string;
-        saveRemotely: boolean;
-        remoteConfig?:
-          | {
-              pathRemote: string;
-              sftpUser: string;
-              sftpHost: string;
-              sftpPort: string;
-              sshKeyPath: string;
-            }
-          | undefined;
-      };
-    }) => void;
+    setSettings: (newSettings: SettingsStore) => void;
 
     openFileDialog: (type: "file" | "folder" | "any") => Promise<string[]>; // Função para abrir o diálogo de seleção de arquivos
   };

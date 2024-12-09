@@ -1,4 +1,5 @@
 import { ipcRenderer, contextBridge } from "electron";
+import { SettingsStore } from "./store";
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld("ipcRenderer", {
@@ -22,25 +23,9 @@ contextBridge.exposeInMainWorld("ipcRenderer", {
   },
 
   getSettings: () => ipcRenderer.invoke("get-settings"), // Obtém as configurações do processo principal
-  setSettings: (newSettings: {
-    theme: string;
-    fontSize: number;
-    backupConfig: {
-      backupFiles: string[];
-      backupTime: string;
-      outputFolder: string;
-      saveRemotely: boolean;
-      remoteConfig?:
-        | {
-            pathRemote: string;
-            sftpUser: string;
-            sftpHost: string;
-            sftpPort: string;
-            sshKeyPath: string;
-          }
-        | undefined;
-    };
-  }) => ipcRenderer.invoke("set-settings", newSettings), // Envia novas configurações para o processo principal
+  setSettings: (newSettings: SettingsStore) =>
+    ipcRenderer.invoke("set-settings", newSettings), // Envia novas configurações para o processo principal
+
   openFileDialog: (type: "file" | "folder" | "any") =>
     ipcRenderer.invoke("dialog:openFile", type),
   // You can expose other APTs you need here.

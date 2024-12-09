@@ -7,7 +7,7 @@ export class BackupUseCase implements IUseCase<void, void> {
   constructor(triggedTime: string) {
     const trigged_time = triggedTime;
     const inHour = trigged_time.split(" ");
-    const timeString = `${inHour[0]}:${inHour[1]}:${inHour[0]}`;
+    const timeString = `${inHour[2]}h ${inHour[1]}m ${inHour[0]}s`;
     console.log("configured to " + timeString);
 
     cron.schedule(trigged_time, async () => {
