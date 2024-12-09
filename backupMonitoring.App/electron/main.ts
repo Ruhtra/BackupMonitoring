@@ -52,8 +52,10 @@ let isQuiting = false;
 // Função para verificar se é a primeira execução
 const isFirstExecution = (): boolean => {
   const firstRun = store.get("firstRun", true); // Verifica se 'firstRun' é true
+
   if (firstRun) {
     store.set("firstRun", false); // Marca como não sendo a primeira execução
+    store.set("appVersion", APP_VERSION);
     return true; // Indica que é a primeira execução
   }
   return false; // Não é a primeira execução
@@ -67,11 +69,11 @@ const initializeSettings = () => {
   } else {
     // Se não for a primeira execução, as configurações já estão salvas
     console.log("Settings already exist, no need to reset.");
-  }
-  if (isVersionChanged()) {
-    resetSettings();
-  } else {
-    console.log("Version equal");
+    if (isVersionChanged()) {
+      resetSettings();
+    } else {
+      console.log("Version equal");
+    }
   }
 };
 
@@ -94,9 +96,11 @@ function createWindow() {
   initializeSettings();
 
   const b = getSettings();
+
   console.log(b);
 
   const a = new BackupUseCase(b.backupConfig.backupCron);
+  a.execute();
 
   // Defina a comunicação IPC
   ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
