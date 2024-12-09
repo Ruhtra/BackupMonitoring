@@ -1,4 +1,4 @@
-import { IUseCase } from "backupmonitoring.shared/Interfaces/IUseCase";
+import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
 import cron from "node-cron";
 import path from "path";
 import fs from "fs";
