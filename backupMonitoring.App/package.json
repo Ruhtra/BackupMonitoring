@@ -2,7 +2,6 @@
   "name": "backupmonitoring.app",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
@@ -10,11 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hookform/resolvers": "*",
+    "@hookform/resolvers": "^3.9.1",
+    "backupmonitoring.backup": "^1.0.0",
     "electron-store": "^10.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "*"
+    "react-hook-form": "*",
+    "react-router-dom": "*",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/electron-store": "*",
