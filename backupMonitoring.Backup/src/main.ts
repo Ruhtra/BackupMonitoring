@@ -4,8 +4,8 @@ import path from "path";
 import fs from "fs";
 
 export class BackupUseCase implements IUseCase<void, void> {
-  constructor() {
-    const trigged_time = "00 12 15 * * *";
+  constructor(triggedTime: string) {
+    const trigged_time = triggedTime;
     const inHour = trigged_time.split(" ");
     const timeString = `${inHour[0]}:${inHour[1]}:${inHour[0]}`;
     console.log("configured to " + timeString);

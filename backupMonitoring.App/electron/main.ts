@@ -10,7 +10,7 @@ import {
   store,
 } from "./store";
 
-// import { BackupUseCase } from "backupmonitoring.backup/src/main";
+import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
 // const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,13 +61,13 @@ const initializeSettings = () => {
 function createWindow() {
   console.log("create window");
 
-  // const a = new BackupUseCase();
-  // a.execute();
+  const a = new BackupUseCase("0 0 * * * *");
+  a.execute();
 
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.mjs"),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
