@@ -22,7 +22,7 @@ export interface SettingsStore {
 // Configuração padrão
 export const defaultSettings: SettingsStore = {
   backupConfig: {
-    backupCron: "00 08 * * *",
+    backupCron: "00 00 08 * * *",
     dayToKeep: 30,
     backupFiles: [],
     outputFolder: path.join("c:", "bkp"),

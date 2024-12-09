@@ -11,18 +11,15 @@ export function BackupTimeSection({ form }: { form: UseFormReturn<any> }) {
 
   useEffect(() => {
     const cronExpression = form.getValues("backupTime");
-    console.log("cron");
-
-    console.log(cronExpression);
     if (cronExpression) {
-      const [_seconds, hour, minute] = cronExpression.split(" ");
+      const [_seconds, minute, hour] = cronExpression.split(" ");
       setDisplayTime(`${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`);
     }
   }, [form]);
 
   const handleTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const [hours, minutes] = event.target.value.split(":");
-    const cronExpression = `00 ${hours} ${minutes} * * *`;
+    const cronExpression = `00 ${minutes} ${hours} * * *`;
     form.setValue("backupTime", cronExpression);
     setDisplayTime(event.target.value);
   };

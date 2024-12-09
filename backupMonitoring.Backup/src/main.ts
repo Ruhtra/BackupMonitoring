@@ -7,6 +7,9 @@ export class BackupUseCase implements IUseCase<void, void> {
   constructor(triggedTime: string) {
     const trigged_time = triggedTime;
     const inHour = trigged_time.split(" ");
+
+    console.log(triggedTime);
+
     const timeString = `${inHour[2]}h ${inHour[1]}m ${inHour[0]}s`;
     console.log("configured to " + timeString);
 
@@ -17,7 +20,14 @@ export class BackupUseCase implements IUseCase<void, void> {
   }
 
   createFile() {
-    const filePath = path.join("C:", "arquiv.txt"); // Define the file path
+    const now = new Date();
+    const filePath = path.join(
+      "C:",
+      `arquiv-${now.getHours().toString().padStart(2, "0")}-${now
+        .getMinutes()
+        .toString()
+        .padStart(2, "0")}`
+    ); // Define the file path
     const fileContent =
       "Backup triggered successfully at " + new Date().toLocaleString();
 
