@@ -1,33 +1,23 @@
 import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
-import cron from "node-cron";
+import cron, { ScheduledTask } from "node-cron"; // Import ScheduledTask para manipular o cron agendado
 import path from "path";
 import fs from "fs";
 
 export class BackupUseCase implements IUseCase<void, void> {
-  constructor(triggedTime: string) {
-    const trigged_time = triggedTime;
-    const inHour = trigged_time.split(" ");
+  private cronTask: ScheduledTask | null = null; // Armazenar a referência do cron job
 
-    console.log(triggedTime);
-
-    const timeString = `${inHour[2]}h ${inHour[1]}m ${inHour[0]}s`;
-    console.log("configured to " + timeString);
-
-    cron.schedule(trigged_time, async () => {
-      console.log(`Cron job triggered at ${timeString}`);
-      this.createFile();
-    });
-  }
+  constructor(private triggedTime: string) {}
 
   createFile() {
     const now = new Date();
     const filePath = path.join(
-      "C:",
+      process.env.HOME || process.env.USERPROFILE || "C:/Temp",
       `arquiv-${now.getHours().toString().padStart(2, "0")}-${now
         .getMinutes()
         .toString()
         .padStart(2, "0")}`
-    ); // Define the file path
+    );
+
     const fileContent =
       "Backup triggered successfully at " + new Date().toLocaleString();
 
@@ -41,7 +31,41 @@ export class BackupUseCase implements IUseCase<void, void> {
     });
   }
 
+  async reload(newTriggedTime: string): Promise<void> {
+    console.log("Reloading cron job with new time:", newTriggedTime);
+
+    // Cancelar o cron job atual se existir
+    if (this.cronTask) {
+      this.cronTask.stop(); // Para o cron job
+      console.log("Previous cron job stopped.");
+    }
+
+    // Atualizar o triggedTime
+    this.triggedTime = newTriggedTime;
+
+    // Agendar o novo cron job
+    this.scheduleCronJob();
+  }
+
   async execute(): Promise<void> {
-    console.log("execute");
+    this.scheduleCronJob(); // Chamar o método de agendamento na primeira execução
+  }
+
+  private scheduleCronJob() {
+    const inHour = this.triggedTime.split(" ");
+
+    const timeString = `${inHour[2]}h ${inHour[1]}m ${inHour[0]}s`;
+    console.log("configured to " + timeString);
+
+    try {
+      // Agendar o cron job e salvar a referência para manipulação posterior
+      this.cronTask = cron.schedule(this.triggedTime, async () => {
+        console.log(`Cron job triggered at ${timeString}`);
+        this.createFile();
+      });
+      console.log("Cron job scheduled successfully.");
+    } catch (error) {
+      console.error("Failed to schedule cron job:", error);
+    }
   }
 }
