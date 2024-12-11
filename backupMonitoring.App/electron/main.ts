@@ -104,9 +104,10 @@ function createWindow() {
 
   // Defina a comunicação IPC
   ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
-  ipcMain.handle("set-settings", (_event, newSettings: SettingsStore) =>
-    setSettings(newSettings)
-  ); // Quando o renderer enviar novas configurações
+  ipcMain.handle("set-settings", (_event, newSettings: SettingsStore) => {
+    setSettings(newSettings);
+    a.reload(newSettings.backupConfig.backupCron);
+  }); // Quando o renderer enviar novas configurações
   ipcMain.handle(
     "dialog:openFile",
     async (_event, type: "file" | "folder" | "any") => {
