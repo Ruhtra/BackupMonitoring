@@ -99,14 +99,36 @@ function createWindow() {
 
   console.log(b);
 
-  const a = new BackupUseCase(b.backupConfig.backupCron);
+  const a = new BackupUseCase({
+    backupCron: b.backupConfig.backupCron,
+    dayToKeep: b.backupConfig.dayToKeep,
+    backupFiles: b.backupConfig.backupFiles,
+    outputFolder: b.backupConfig.outputFolder,
+    sendFile: b.backupConfig.sendFile,
+    pathRemote: b.backupConfig.pathRemote,
+    sftpUser: b.backupConfig.sftpUser,
+    sftpHost: b.backupConfig.sftpHost,
+    sftpPort: b.backupConfig.sftpPort,
+    sshKeyPath: b.backupConfig.sshKeyPath,
+  });
   a.execute();
 
   // Defina a comunicação IPC
   ipcMain.handle("get-settings", () => getSettings()); // Quando o renderer pedir as configurações
   ipcMain.handle("set-settings", (_event, newSettings: SettingsStore) => {
     setSettings(newSettings);
-    a.reload(newSettings.backupConfig.backupCron);
+    a.reload({
+      backupCron: newSettings.backupConfig.backupCron,
+      dayToKeep: newSettings.backupConfig.dayToKeep,
+      backupFiles: newSettings.backupConfig.backupFiles,
+      outputFolder: newSettings.backupConfig.outputFolder,
+      sendFile: newSettings.backupConfig.sendFile,
+      pathRemote: newSettings.backupConfig.pathRemote,
+      sftpUser: newSettings.backupConfig.sftpUser,
+      sftpHost: newSettings.backupConfig.sftpHost,
+      sftpPort: newSettings.backupConfig.sftpPort,
+      sshKeyPath: newSettings.backupConfig.sshKeyPath,
+    });
   }); // Quando o renderer enviar novas configurações
   ipcMain.handle(
     "dialog:openFile",

@@ -2,66 +2,99 @@ import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
 import cron, { ScheduledTask } from "node-cron"; // Import ScheduledTask para manipular o cron agendado
 import path from "path";
 import fs from "fs";
+import { IBackupService } from "./services/IBackupFirebirdService";
+import { BackupFirebirdService } from "./services/BackupFirebirdService";
+import { ISendService } from "./services/ISendService";
+import { SendSftpService } from "./services/SendSftpService";
+
+interface SettingsConfig {
+  backupFiles: string[];
+  dayToKeep: number;
+  backupCron: string;
+  outputFolder: string;
+
+  sendFile: boolean;
+  pathRemote?: string;
+  sftpUser?: string;
+  sftpHost?: string;
+  sftpPort?: string;
+  sshKeyPath?: string;
+}
 
 export class BackupUseCase implements IUseCase<void, void> {
-  private cronTask: ScheduledTask | null = null; // Armazenar a referência do cron job
+  private cronTask: ScheduledTask | null = null;
+  private backupService: IBackupService;
+  private sendService: ISendService;
 
-  constructor(private triggedTime: string) {}
-
-  createFile() {
-    const now = new Date();
-    const filePath = path.join(
-      process.env.HOME || process.env.USERPROFILE || "C:/Temp",
-      `arquiv-${now.getHours().toString().padStart(2, "0")}-${now
-        .getMinutes()
-        .toString()
-        .padStart(2, "0")}`
+  constructor(private settings: SettingsConfig) {
+    this.backupService = new BackupFirebirdService(
+      this.settings.backupFiles,
+      this.settings.outputFolder,
+      this.settings.dayToKeep
     );
 
-    const fileContent =
-      "Backup triggered successfully at " + new Date().toLocaleString();
-
-    // Write content to the file (will overwrite existing file)
-    fs.writeFile(filePath, fileContent, (err) => {
-      if (err) {
-        console.error("Error writing file:", err);
-      } else {
-        console.log(`File successfully written to ${filePath}`);
-      }
-    });
+    this.sendService = new SendSftpService(
+      this.settings.outputFolder,
+      this.settings.pathRemote!,
+      this.settings.sftpUser!,
+      this.settings.sftpHost!,
+      this.settings.sftpPort!,
+      this.settings.sshKeyPath!,
+      this.settings.dayToKeep
+    );
   }
 
-  async reload(newTriggedTime: string): Promise<void> {
-    console.log("Reloading cron job with new time:", newTriggedTime);
-
-    // Cancelar o cron job atual se existir
+  async reload(newSettings: SettingsConfig): Promise<void> {
     if (this.cronTask) {
-      this.cronTask.stop(); // Para o cron job
+      this.cronTask.stop();
       console.log("Previous cron job stopped.");
     }
 
-    // Atualizar o triggedTime
-    this.triggedTime = newTriggedTime;
+    this.settings = newSettings;
+    this.backupService = new BackupFirebirdService(
+      this.settings.backupFiles,
+      this.settings.outputFolder,
+      this.settings.dayToKeep
+    );
+    this.sendService = new SendSftpService(
+      this.settings.outputFolder,
+      this.settings.pathRemote!,
+      this.settings.sftpUser!,
+      this.settings.sftpHost!,
+      this.settings.sftpPort!,
+      this.settings.sshKeyPath!,
+      this.settings.dayToKeep
+    );
 
-    // Agendar o novo cron job
     this.scheduleCronJob();
   }
 
   async execute(): Promise<void> {
-    this.scheduleCronJob(); // Chamar o método de agendamento na primeira execução
+    this.scheduleCronJob();
   }
 
   private scheduleCronJob() {
-    const inHour = this.triggedTime.split(" ");
-
-    const timeString = `${inHour[2]}h ${inHour[1]}m ${inHour[0]}s`;
+    const [seconds, minutes, hours] = this.settings.backupCron.split(" ");
+    const timeString = `${hours}h ${minutes}m ${seconds}s`;
     console.log("configured to " + timeString);
 
     try {
-      // Agendar o cron job e salvar a referência para manipulação posterior
-      this.cronTask = cron.schedule(this.triggedTime, async () => {
-        console.log(`Cron job triggered at ${timeString}`);
-        this.createFile();
+      this.cronTask = cron.schedule(this.settings.backupCron, async () => {
+        // fazendo backup
+        this.backupService.MakeBackup({
+          backupsFilePath: this.settings.backupFiles,
+          onSuccess: async () => {},
+          onFail: async () => {},
+        });
+
+        if (this.settings.sendFile) {
+          this.sendService.execute({
+            fileNames: ["TESTE_12_12_24.GBK"],
+            onSuccess: async () => {},
+            onProgress: async () => {},
+            onFail: async () => {},
+          });
+        }
       });
       console.log("Cron job scheduled successfully.");
     } catch (error) {
