@@ -13,6 +13,7 @@ import { RemoteConfigSection } from "./RemoteConfigSection";
 import { ActionButtons } from "./ActionButtons";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { GbakFilePathSection } from "./GbakFilePathSection";
 
 //puxar da shared
 export interface SettingsStore {
@@ -21,6 +22,7 @@ export interface SettingsStore {
     dayToKeep: number;
     backupCron: string;
     outputFolder: string;
+    gbakFilePath: string;
 
     sendFile: boolean;
     pathRemote?: string;
@@ -37,6 +39,7 @@ const formSchema = z.object({
   backupTime: z.string(),
   outputFolder: z.string(),
   saveRemotely: z.boolean(),
+  gbakFilePath: z.string().min(1),
   remoteConfig: z
     .object({
       pathRemote: z.string(),
@@ -59,6 +62,7 @@ export function ConfigScreen() {
       backupFiles: [],
       backupTime: "00 00 * * *",
       outputFolder: "",
+      gbakFilePath: "",
       saveRemotely: false,
       remoteConfig: {
         pathRemote: "",
@@ -83,6 +87,7 @@ export function ConfigScreen() {
             backupTime: backupConfig.backupCron,
             outputFolder: backupConfig.outputFolder,
             saveRemotely: backupConfig.sendFile,
+            gbakFilePath: backupConfig.gbakFilePath,
             remoteConfig: {
               pathRemote: backupConfig.pathRemote,
               sftpUser: backupConfig.sftpUser,
@@ -108,6 +113,7 @@ export function ConfigScreen() {
         backupFiles: values.backupFiles,
         dayToKeep: 3,
         outputFolder: values.outputFolder,
+        gbakFilePath: values.gbakFilePath,
         sendFile: values.saveRemotely,
         pathRemote: values.remoteConfig?.pathRemote,
         sftpUser: values.remoteConfig?.sftpUser,
@@ -148,6 +154,7 @@ export function ConfigScreen() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <BackupFilesSection form={form} />
+              <GbakFilePathSection form={form} />
               <BackupTimeSection form={form} />
               <OutputFolderSection form={form} />
               <RemoteConfigSection form={form} />

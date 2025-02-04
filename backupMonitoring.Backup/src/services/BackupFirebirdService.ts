@@ -13,16 +13,17 @@ export class BackupFirebirdService implements IBackupService {
 
   constructor(
     /*databaseDirs: string[],*/ outputDir: string,
-    daysToKeep: number
+    daysToKeep: number,
+    gbakFilePath: string
   ) {
-    const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
-    this.firebirdPath = path.join(
-      programFilesX86,
-      "Firebird",
-      "Firebird_2_5",
-      "bin",
-      "gbak.exe"
-    );
+    // const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
+    this.firebirdPath = gbakFilePath;
+    // programFilesX86,
+    // "Firebird",
+    // "Firebird_2_5",
+    // "bin",
+    // "gbak.exe"
+
     // this.databaseDirs = databaseDirs;
     this.outputDir = outputDir;
     this.logDir = path.join(outputDir, "log");

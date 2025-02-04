@@ -8,6 +8,7 @@ export interface SettingsStore {
     dayToKeep: number;
     backupCron: string;
     outputFolder: string;
+    gbakFilePath: string;
 
     sendFile: boolean;
     pathRemote?: string;
@@ -32,6 +33,8 @@ export const defaultSettings: SettingsStore = {
     sftpHost: "",
     sftpPort: "22",
     sshKeyPath: `/.ssh/id_rsa`,
+    gbakFilePath:
+      "C:\\Program Files (x86)\\Firebird\\Firebird_2_5\\bin\\gbak.exe",
   },
   theme: "light",
 };

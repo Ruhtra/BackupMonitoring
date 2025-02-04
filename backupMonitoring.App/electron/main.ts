@@ -105,6 +105,7 @@ function createWindow() {
     backupFiles: b.backupConfig.backupFiles,
     outputFolder: b.backupConfig.outputFolder,
     sendFile: b.backupConfig.sendFile,
+    gbakFilePath: b.backupConfig.gbakFilePath,
     pathRemote: b.backupConfig.pathRemote,
     sftpUser: b.backupConfig.sftpUser,
     sftpHost: b.backupConfig.sftpHost,
@@ -128,6 +129,7 @@ function createWindow() {
       sftpHost: newSettings.backupConfig.sftpHost,
       sftpPort: newSettings.backupConfig.sftpPort,
       sshKeyPath: newSettings.backupConfig.sshKeyPath,
+      gbakFilePath: newSettings.backupConfig.gbakFilePath,
     });
   }); // Quando o renderer enviar novas configurações
   ipcMain.handle(
