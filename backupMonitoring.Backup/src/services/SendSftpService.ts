@@ -34,16 +34,16 @@ export class SendSftpService implements ISendService {
   async execute(options: SendOptions): Promise<void> {
     const { fileNames, onSuccess, onProgress, onFail } = options;
 
-    // const sftp = new SftpClient();
+    const sftp = new SftpClient();
     let isConnected = false;
 
     try {
-      // await sftp.connect({
-      //   host: this.address,
-      //   port: Number(this.port),
-      //   username: this.user,
-      //   privateKey: fs.readFileSync(this.privateKey),
-      // });
+      await sftp.connect({
+        host: this.address,
+        port: Number(this.port),
+        username: this.user,
+        privateKey: fs.readFileSync(this.privateKey),
+      });
       isConnected = true;
 
       for (const fileName of fileNames) {
@@ -54,45 +54,50 @@ export class SendSftpService implements ISendService {
           continue;
         }
 
-        // await sftp.fastPut(filePath, path.join(this.remotePath, fileName), {
-        //   step(totalTransferred, chunk, total) {
-        //     const percentage = ((totalTransferred / total) * 100).toFixed(2);
-        //     onProgress(fileName, percentage);
-        //   },
-        // });
+        await sftp.fastPut(filePath, path.join(this.remotePath, fileName), {
+          step(totalTransferred, _chunk, total) {
+            const percentage = ((totalTransferred / total) * 100).toFixed(2);
+            onProgress(fileName, percentage);
+          },
+        });
 
         await onSuccess(fileName);
       }
 
-      // await this.cleanupOldBackups(sftp);
+      await this.cleanupOldBackups(sftp);
     } catch (error) {
-      console.log(error);
-
-      for (const fileName of fileNames) {
-        await onFail(fileName, error);
+      if (error instanceof Error) {
+        for (const fileName of fileNames) {
+          await onFail(fileName, error);
+        }
+      } else {
+        for (const fileName of fileNames) {
+          await onFail(fileName, new Error("Erro desconhecido no envio "));
+        }
       }
     } finally {
       if (isConnected) {
+        // await sftp.end()
         // await sftp.end();
       }
     }
   }
 
   // Método para limpar backups antigos no servidor
-  // private async cleanupOldBackups(sftp: SftpClient): Promise<void> {
-  //   const files = await sftp.list(this.remotePath);
-  //   const backupFiles = files.filter((file) => file.name.endsWith(".GBK"));
+  private async cleanupOldBackups(sftp: SftpClient): Promise<void> {
+    const files = await sftp.list(this.remotePath);
+    const backupFiles = files.filter((file) => file.name.endsWith(".GBK"));
 
-  //   for (const file of backupFiles) {
-  //     const fileDate = extractDateFromFileName(file.name).getTime();
-  //     const currentDate = new Date();
-  //     const retentionLimit = new Date();
-  //     retentionLimit.setDate(currentDate.getDate() - this.daysToKeep);
+    for (const file of backupFiles) {
+      const fileDate = extractDateFromFileName(file.name).getTime();
+      const currentDate = new Date();
+      const retentionLimit = new Date();
+      retentionLimit.setDate(currentDate.getDate() - this.daysToKeep);
 
-  //     if (fileDate < retentionLimit.getTime()) {
-  //       await sftp.delete(`${this.remotePath}/${file.name}`);
-  //       console.log(`Deleted old backup: ${file.name}`);
-  //     }
-  //   }
-  // }
+      if (fileDate < retentionLimit.getTime()) {
+        await sftp.delete(`${this.remotePath}/${file.name}`);
+        console.log(`Deleted old backup: ${file.name}`);
+      }
+    }
+  }
 }
