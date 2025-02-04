@@ -12,6 +12,7 @@ interface SettingsConfig {
   dayToKeep: number;
   backupCron: string;
   outputFolder: string;
+  gbakFilePath: string;
 
   sendFile: boolean;
   pathRemote?: string;
@@ -30,7 +31,8 @@ export class BackupUseCase implements IUseCase<void, void> {
     this.backupService = new BackupFirebirdService(
       // this.settings.backupFiles,
       this.settings.outputFolder,
-      this.settings.dayToKeep
+      this.settings.dayToKeep,
+      this.settings.gbakFilePath
     );
 
     this.sendService = new SendSftpService(
@@ -54,7 +56,8 @@ export class BackupUseCase implements IUseCase<void, void> {
     this.backupService = new BackupFirebirdService(
       // this.settings.backupFiles,
       this.settings.outputFolder,
-      this.settings.dayToKeep
+      this.settings.dayToKeep,
+      this.settings.gbakFilePath
     );
     this.sendService = new SendSftpService(
       this.settings.outputFolder,

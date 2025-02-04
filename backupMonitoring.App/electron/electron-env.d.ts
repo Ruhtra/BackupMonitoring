@@ -7,6 +7,7 @@ interface SettingsStore {
     dayToKeep: number;
     backupCron: string;
     outputFolder: string;
+    gbakFilePath: string;
 
     sendFile: boolean;
     pathRemote?: string;
@@ -17,8 +18,6 @@ interface SettingsStore {
   };
   theme: string;
 }
-
-
 
 declare namespace NodeJS {
   interface ProcessEnv {
