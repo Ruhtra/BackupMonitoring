@@ -6,12 +6,15 @@ import { formatDateToString } from "../utils";
 
 export class BackupFirebirdService implements IBackupService {
   private firebirdPath: string;
-  private databaseDirs: string[];
+  // private databaseDirs: string[];
   private outputDir: string;
   private logDir: string;
   private daysToKeep: number;
 
-  constructor(databaseDirs: string[], outputDir: string, daysToKeep: number) {
+  constructor(
+    /*databaseDirs: string[],*/ outputDir: string,
+    daysToKeep: number
+  ) {
     const programFilesX86 = process.env["ProgramFiles(x86)"] || "";
     this.firebirdPath = path.join(
       programFilesX86,
@@ -20,7 +23,7 @@ export class BackupFirebirdService implements IBackupService {
       "bin",
       "gbak.exe"
     );
-    this.databaseDirs = databaseDirs;
+    // this.databaseDirs = databaseDirs;
     this.outputDir = outputDir;
     this.logDir = path.join(outputDir, "log");
     this.daysToKeep = daysToKeep;
@@ -66,7 +69,7 @@ export class BackupFirebirdService implements IBackupService {
     const extension = isLog ? "log" : "GBK";
     const currentDate = new Date();
 
-    const allowedDates = [];
+    const allowedDates: string[] = [];
     for (let i = 0; i < daysToKeep; i++) {
       const date = new Date();
       date.setDate(currentDate.getDate() - i);
@@ -79,7 +82,8 @@ export class BackupFirebirdService implements IBackupService {
       .readdirSync(outputDir)
       .filter((file) => file.endsWith(`.${extension}`));
 
-    let backupExists = false;
+    let backupExists: boolean = false;
+    console.log(backupExists);
 
     files.forEach((file) => {
       const filePath = path.join(outputDir, file);
@@ -150,7 +154,7 @@ export class BackupFirebirdService implements IBackupService {
             console.error(
               `Processo de backup de ${dbPathName} falhou com código ${code}`
             );
-            await onFail(dbPathName, code);
+            await onFail(dbPathName, code!);
           }
 
           resolve();
@@ -188,7 +192,8 @@ export class BackupFirebirdService implements IBackupService {
 
       console.log("Todos os backups foram executados com sucesso.");
     } catch (error) {
-      console.error(`Erro ao executar o backup: ${error.message}`);
+      if (error instanceof Error)
+        console.error(`Erro ao executar o backup: ${error.message}`);
     }
   }
 }

@@ -1,6 +1,6 @@
 import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
 import cron, { ScheduledTask } from "node-cron"; // Import ScheduledTask para manipular o cron agendado
-import path from "path";
+// import path from "path";
 import fs from "fs";
 import { IBackupService } from "./services/IBackupFirebirdService";
 import { BackupFirebirdService } from "./services/BackupFirebirdService";
@@ -28,7 +28,7 @@ export class BackupUseCase implements IUseCase<void, void> {
 
   constructor(private settings: SettingsConfig) {
     this.backupService = new BackupFirebirdService(
-      this.settings.backupFiles,
+      // this.settings.backupFiles,
       this.settings.outputFolder,
       this.settings.dayToKeep
     );
@@ -52,7 +52,7 @@ export class BackupUseCase implements IUseCase<void, void> {
 
     this.settings = newSettings;
     this.backupService = new BackupFirebirdService(
-      this.settings.backupFiles,
+      // this.settings.backupFiles,
       this.settings.outputFolder,
       this.settings.dayToKeep
     );
@@ -81,15 +81,19 @@ export class BackupUseCase implements IUseCase<void, void> {
     try {
       this.cronTask = cron.schedule(this.settings.backupCron, async () => {
         // fazendo backup
-        this.backupService.MakeBackup({
+        await this.backupService.MakeBackup({
           backupsFilePath: this.settings.backupFiles,
           onSuccess: async () => {},
           onFail: async () => {},
         });
 
+        const files = fs
+          .readdirSync(this.settings.outputFolder)
+          .filter((file) => file.endsWith(`.GBK`));
+
         if (this.settings.sendFile) {
           this.sendService.execute({
-            fileNames: ["TESTE_12_12_24.GBK"],
+            fileNames: files,
             onSuccess: async () => {},
             onProgress: async () => {},
             onFail: async () => {},
