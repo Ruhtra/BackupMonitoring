@@ -83,29 +83,55 @@ export class BackupUseCase implements IUseCase<void, void> {
 
     try {
       this.cronTask = cron.schedule(this.settings.backupCron, async () => {
+        //database: cria backup in
+
+        //entity: atualzia o processo
+
+        //database: atualiza o processo de start
+
         // fazendo backup
         await this.backupService.MakeBackup({
           backupsFilePath: this.settings.backupFiles,
-          onSuccess: async () => {},
-          onFail: async () => {},
+          onSuccess: async () => {
+            //entity: atualiza o processo
+            //database: atualza o processo
+          },
+          onFail: async () => {
+            //entity: atualiza o processo
+            //database: atualza o processo
+          },
         });
 
-        const files = fs
-          .readdirSync(this.settings.outputFolder)
-          .filter((file) => file.endsWith(`.GBK`));
-
         if (this.settings.sendFile) {
+          const files = fs
+            .readdirSync(this.settings.outputFolder)
+            .filter((file) => file.endsWith(`.GBK`));
+
+          //entity: incia envio
+          //entity: salva o envio
           this.sendService.execute({
             fileNames: files,
-            onSuccess: async () => {},
-            onProgress: async () => {},
-            onFail: async () => {},
+            onSuccess: async () => {
+              //entity: atualiza o processo
+              //database: atualza o processo
+            },
+            onProgress: async () => {
+              //entity: atualiza o processo
+              //database: atualza o processo
+            },
+            onFail: async () => {
+              //entity: atualiza o processo
+              //database: atualza o processo
+            },
           });
         }
       });
       console.log("Cron job scheduled successfully.");
     } catch (error) {
       console.error("Failed to schedule cron job:", error);
+    } finally {
+      //entity: finaliza processo
+      //database: save processo
     }
   }
 }
