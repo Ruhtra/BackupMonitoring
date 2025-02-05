@@ -6,6 +6,7 @@ import { IBackupService } from "./services/IBackupFirebirdService";
 import { BackupFirebirdService } from "./services/BackupFirebirdService";
 import { ISendService } from "./services/ISendService";
 import { SendSftpService } from "./services/SendSftpService";
+import axios from "axios";
 
 interface SettingsConfig {
   backupFiles: string[];
@@ -21,6 +22,12 @@ interface SettingsConfig {
   sftpPort?: string;
   sshKeyPath?: string;
 }
+
+const api = axios.create({
+  baseURL: "http://server-api",
+  timeout: 1000,
+  headers: { "Content-Type": "application/json" },
+});
 
 export class BackupUseCase implements IUseCase<void, void> {
   private cronTask: ScheduledTask | null = null;
@@ -83,22 +90,22 @@ export class BackupUseCase implements IUseCase<void, void> {
 
     try {
       this.cronTask = cron.schedule(this.settings.backupCron, async () => {
-        //database: cria backup in
-
-        //entity: atualzia o processo
-
-        //database: atualiza o processo de start
+        let reg;
+        api
+          .post("startBackup", {})
+          .then((response) => {
+            reg = response.data;
+          })
+          .catch((err) => console.log(err));
 
         // fazendo backup
         await this.backupService.MakeBackup({
           backupsFilePath: this.settings.backupFiles,
           onSuccess: async () => {
-            //entity: atualiza o processo
-            //database: atualza o processo
+            api.post("backupSuccess", {}).catch((err) => console.log(err));
           },
           onFail: async () => {
-            //entity: atualiza o processo
-            //database: atualza o processo
+            api.post("backupFail", {}).catch((err) => console.log(err));
           },
         });
 

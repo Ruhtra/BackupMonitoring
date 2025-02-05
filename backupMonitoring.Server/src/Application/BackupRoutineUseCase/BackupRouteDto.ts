@@ -1,3 +1,3 @@
-export class BackupRoutineInputDto {
-  Notify: () => Promise<void>;
-}
+// export class BackupRoutineInputDto {
+//   Notify: () => Promise<void>;
+// }
