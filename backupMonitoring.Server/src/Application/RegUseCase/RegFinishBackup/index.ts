@@ -1,7 +1,7 @@
 import { env } from "../../../env";
 import { RegLocalRepository } from "../../../Infrastructure/Repositories/RegLocalRepository";
 import { RegPrismaRepository } from "../../../Infrastructure/Repositories/RegPrismaRepository";
-import { RegFailBackupUseCase } from "./RegFailUseCase";
+import { RegFailBackupUseCase } from "./RegFinishUseCase";
 
 const isProduction = env.NODE_ENV === "production";
 const regRepository = isProduction
