@@ -98,6 +98,8 @@ export class BackupUseCase implements IUseCase<void, void> {
           })
           .catch((err) => console.log(err));
 
+        // console.log(reg);
+
         // fazendo backup
         await this.backupService.MakeBackup({
           backupsFilePath: this.settings.backupFiles,
