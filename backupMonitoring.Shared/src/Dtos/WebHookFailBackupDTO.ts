@@ -1,3 +1,4 @@
-export class WebHookFailBackupInputDTO {
+export class WebHookFinishBackupInputDTO {
   id: string;
+  status: "success" | "fail";
 }
