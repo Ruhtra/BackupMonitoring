@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { IController } from "../../ICotnroller";
-import { WebHookFinishBackupInputDTO } from "backupmonitoring.shared/src/Dtos/WebHookFinishBackupDTO";
+import { WebHookStartSendingInputDTO } from "backupmonitoring.shared/src/Dtos/WebHookStartSendingDTO";
 import { regGetUseCase } from "src/Application/RegUseCase/RegGet";
-import { regFailBackupUseCase } from "src/Application/RegUseCase/RegFinishBackup";
+import { regStartSendingUseCase } from "src/Application/RegUseCase/RegStartSending";
 
-export class WebHookFinishBackup implements IController {
+export class WebHookStartSending implements IController {
   async handle(request: Request, response: Response): Promise<any> {
-    const a = request.body as WebHookFinishBackupInputDTO;
+    const a = request.body as WebHookStartSendingInputDTO;
 
     const reg = await regGetUseCase.execute({
       id: a.id,
@@ -14,9 +14,8 @@ export class WebHookFinishBackup implements IController {
 
     if (!reg) response.sendStatus(404);
 
-    await regFailBackupUseCase.execute({
+    await regStartSendingUseCase.execute({
       id: reg.id,
-      status: a.status,
     });
 
     return response.sendStatus(200);
