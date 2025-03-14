@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { IController } from "../../ICotnroller";
 import { WebHookFinishBackupInputDTO } from "backupmonitoring.shared/src/Dtos/WebHookFinishBackupDTO";
-import { regGetUseCase } from "src/Application/RegUseCase/RegGet";
-import { regFailBackupUseCase } from "src/Application/RegUseCase/RegFinishBackup";
+import { regGetUseCase } from "../../../../Application/RegUseCase/RegGet";
+import { regFailBackupUseCase } from "../../../../Application/RegUseCase/RegFinishBackup";
 
 export class WebHookFinishBackup implements IController {
   async handle(request: Request, response: Response): Promise<any> {

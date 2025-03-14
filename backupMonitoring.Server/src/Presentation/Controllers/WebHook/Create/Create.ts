@@ -4,7 +4,7 @@ import {
   WebHookCreateInputDTO,
   WebHookCreateOutputDTO,
 } from "backupmonitoring.shared/src/Dtos/WebHookCreateDTO";
-import { regCreateUseCase } from "src/Application/RegUseCase/RegCreate";
+import { regCreateUseCase } from "../../../../Application/RegUseCase/RegCreate";
 
 export class WebHookCreate implements IController {
   async handle(request: Request, response: Response): Promise<any> {

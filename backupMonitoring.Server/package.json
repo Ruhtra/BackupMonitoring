@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node --env-file=.env.production ./dist/index.js",
+    "start": "npm run build && node --env-file=.env.production ./dist/backupMonitoring.Server/src/index.js",
     "startPm2": "npm run build && npx pm2 start ./ecosystem.config.js",
     "dev": "tsx watch --env-file=.env.development src/index.ts"
   },

@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", router);
 
 // Global Error Handler
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: any, req: Request, res: Response, next: Function) => {
   console.error(err.stack);
 
   const statusCode = err.status || 500;

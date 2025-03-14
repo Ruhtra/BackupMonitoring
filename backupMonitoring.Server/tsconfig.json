@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "composite": true,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "allowSyntheticDefaultImports": true,
     "declaration": true, // Gera tipos (.d.ts)
     "declarationMap": true, // Gera mapa de tipos (.d.ts.map) para facilitar o debugging
