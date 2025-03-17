@@ -1,8 +1,9 @@
 import z from "zod";
 
 const envScheme = z.object({
-  PORT: z.string(),
-  DATABASE_URL: z.string(),
+  //TO-DO: remover os optionals
+  PORT: z.string().optional(),
+  DATABASE_URL: z.string().optional(),
   NODE_ENV: z.enum(["development", "production", "test"]),
 
   // backup

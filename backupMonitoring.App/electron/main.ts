@@ -11,6 +11,10 @@ import {
   store,
 } from "./store";
 
+import "dotenv/config";
+
+console.log(process.env.NODE_ENV);
+
 import { BackupUseCase } from "backupmonitoring.backup/src/main";
 
 // const require = createRequire(import.meta.url);

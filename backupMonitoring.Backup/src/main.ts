@@ -1,4 +1,11 @@
 import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
+import { regCreateUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegCreate";
+import { regStartProccessUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegStartProccess";
+import { regStartBackupUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegStartBackup";
+import { regFinishBackupUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegFinishBackup";
+import { regStartSendingUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegStartSending";
+import { regFinishSendingUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegFinishSending";
+import { regFinishProccessUseCase } from "backupmonitoring.server/src/Application/RegUseCase/RegFinishProccess";
 import cron, { ScheduledTask } from "node-cron"; // Import ScheduledTask para manipular o cron agendado
 // import path from "path";
 import fs from "fs";
@@ -26,6 +33,7 @@ interface SettingsConfig {
 
 const api = axios.create({
   baseURL: "http://localhost:8080/webhook/",
+  // baseURL: "http://n3solucoes.zapto.org:7405/webhook/",
   timeout: 1000,
   headers: { "Content-Type": "application/json" },
 });
@@ -90,9 +98,13 @@ export class BackupUseCase implements IUseCase<void, void> {
     console.log("configured to " + timeString);
 
     async function generateId(name: string): Promise<string> {
-      const { data } = await api.post<{ id: string }>("create", {
+      const data = await regCreateUseCase.execute({
         dbName: name,
       });
+
+      // const { data } = await api.post<{ id: string }>("create", {
+      //   dbName: name,
+      // });
 
       if (data) {
         return data.id;
@@ -109,18 +121,20 @@ export class BackupUseCase implements IUseCase<void, void> {
         );
 
         await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("startProccess", { id: e.id })
-              .catch((err) => console.log(err))
+          backupFileObjects.map(
+            (e) => regStartProccessUseCase.execute({ id: e.id })
+            // api
+            //   .post("startProccess", { id: e.id })
+            // .catch((err) => console.log(err))
           )
         );
 
         await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("startBackup", { id: e.id })
-              .catch((err) => console.log(err))
+          backupFileObjects.map(
+            (e) => regStartBackupUseCase.execute({ id: e.id })
+            // api
+            //   .post("startBackup", { id: e.id })
+            // .catch((err) => console.log(err))
           )
         );
 
@@ -138,9 +152,10 @@ export class BackupUseCase implements IUseCase<void, void> {
             );
             if (backupFileObject) {
               const { id } = backupFileObject;
-              api
-                .post("finishbackup", { id, status: "success" })
-                .catch((err) => console.log(err));
+              await regFinishBackupUseCase.execute({ id, status: "success" });
+              // api
+              //   .post("finishbackup", { id, status: "success" })
+              // .catch((err) => console.log(err));
             } else {
               console.error(
                 `Backup file object not found for database: ${fileNameWithoutExtension}`
@@ -159,9 +174,11 @@ export class BackupUseCase implements IUseCase<void, void> {
             );
             if (backupFileObject) {
               const { id } = backupFileObject;
-              api
-                .post("finishbackup", { id, status: "fail" })
-                .catch((err) => console.log(err));
+
+              await regFinishBackupUseCase.execute({ id, status: "fail" });
+              // api
+              //   .post("finishbackup", { id, status: "fail" })
+              // .catch((err) => console.log(err));
             } else {
               console.error(
                 `Backup file object not found for database: ${fileNameWithoutExtension}`
@@ -173,10 +190,11 @@ export class BackupUseCase implements IUseCase<void, void> {
 
         if (this.settings.sendFile) {
           await Promise.all(
-            backupFileObjects.map((e) =>
-              api
-                .post("startSending", { id: e.id })
-                .catch((err) => console.log(err))
+            backupFileObjects.map(
+              (e) => regStartSendingUseCase.execute({ id: e.id })
+              // api
+              //   .post("startSending", { id: e.id })
+              // .catch((err) => console.log(err))
             )
           );
 
@@ -197,9 +215,13 @@ export class BackupUseCase implements IUseCase<void, void> {
               );
               if (backupFileObject) {
                 const { id } = backupFileObject;
-                api
-                  .post("finishSending", { id, status: "success" })
-                  .catch((err) => console.log(err));
+                await regFinishSendingUseCase.execute({
+                  id,
+                  status: "success",
+                });
+                // api
+                //   .post("finishSending", { id, status: "success" })
+                // .catch((err) => console.log(err));
               } else {
                 console.error(
                   `Backup file object not found for database: ${fileNameWithoutDate}`
@@ -222,9 +244,10 @@ export class BackupUseCase implements IUseCase<void, void> {
               );
               if (backupFileObject) {
                 const { id } = backupFileObject;
-                api
-                  .post("finishSending", { id, status: "fail" })
-                  .catch((err) => console.log(err));
+                await regFinishSendingUseCase.execute({ id, status: "fail" });
+                // api
+                //   .post("finishSending", { id, status: "fail" })
+                // .catch((err) => console.log(err));
               } else {
                 console.error(
                   `Backup file object not found for database: ${fileNameWithoutDate}`
@@ -236,12 +259,13 @@ export class BackupUseCase implements IUseCase<void, void> {
         }
 
         await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("finishProccess", {
-                id: e.id,
-              })
-              .catch((err) => console.log(err))
+          backupFileObjects.map(
+            (e) => regFinishProccessUseCase.execute({ id: e.id })
+            // api
+            //   .post("finishProccess", {
+            //     id: e.id,
+            //   })
+            // .catch((err) => console.log(err))
           )
         );
       });

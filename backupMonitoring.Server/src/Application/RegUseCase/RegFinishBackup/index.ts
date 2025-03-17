@@ -8,6 +8,6 @@ const regRepository = isProduction
   ? new RegPrismaRepository()
   : new RegLocalRepository();
 
-const regFailBackupUseCase = new RegFailBackupUseCase(regRepository);
+const regFinishBackupUseCase = new RegFailBackupUseCase(regRepository);
 
-export { regFailBackupUseCase };
+export { regFinishBackupUseCase };

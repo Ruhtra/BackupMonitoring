@@ -9,7 +9,8 @@
     "rootDir": ".",
     "paths": {
       "backupmonitoring.shared/*": ["./backupMonitoring.Shared/src/*"],
-      "backupmonitoring.backup/*": ["./backupMonitoring.Backup/src/*"]
+      "backupmonitoring.backup/*": ["./backupMonitoring.Backup/src/*"],
+      "backupmonitoring.server/*": ["./backupMonitoring.Server/src/*"]
     },
     "types": ["node"]
   },
@@ -20,7 +21,6 @@
   ],
   "references": [
     { "path": "./backupMonitoring.Shared" },
-    { "path": "./backupMonitoring.Backup" },
-    { "path": "./backupMonitoring.App" }
+    { "path": "./backupMonitoring.Backup" }
   ]
 }
