@@ -105,144 +105,77 @@ export class BackupUseCase implements IUseCase<void, void> {
           this.settings.backupFiles.map(async (file) => ({
             id: await generateId(path.basename(file, path.extname(file))),
             name: path.basename(file, path.extname(file)),
+            path: file,
           }))
         );
 
         await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("startProccess", { id: e.id })
-              .catch((err) => console.log(err))
-          )
-        );
+          backupFileObjects.map(async (e) => {
+            try {
+              await api.post("startProccess", { id: e.id }).catch(() => {});
+              await api.post("startBackup", { id: e.id }).catch(() => {});
 
-        await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("startBackup", { id: e.id })
-              .catch((err) => console.log(err))
-          )
-        );
+              await this.backupService.MakeBackup({
+                backupsFilePath: [e.path],
+                onSuccess: async () => {
+                  await api
+                    .post("finishbackup", {
+                      id: e.id,
+                      status: "success",
+                    })
+                    .catch(() => {});
+                },
+                onFail: async () => {
+                  await api
+                    .post("finishbackup", {
+                      id: e.id,
+                      status: "fail",
+                    })
+                    .catch(() => {});
+                },
+              });
 
-        // fazendo backup
-        await this.backupService.MakeBackup({
-          backupsFilePath: this.settings.backupFiles,
-          onSuccess: async (dbName) => {
-            const fileNameWithoutExtension = path.basename(
-              dbName,
-              path.extname(dbName)
-            );
+              if (this.settings.sendFile) {
+                await api.post("startSending", { id: e.id }).catch(() => {});
 
-            const backupFileObject = backupFileObjects.find(
-              (obj) => obj.name === fileNameWithoutExtension
-            );
-            if (backupFileObject) {
-              const { id } = backupFileObject;
-              api
-                .post("finishbackup", { id, status: "success" })
-                .catch((err) => console.log(err));
-            } else {
-              console.error(
-                `Backup file object not found for database: ${fileNameWithoutExtension}`
-              );
-              // throw new Error(`Backup file object not found for database: ${dbName}`);
-            }
-          },
-          onFail: async (dbName) => {
-            const fileNameWithoutExtension = path.basename(
-              dbName,
-              path.extname(dbName)
-            );
+                const files = fs
+                  .readdirSync(this.settings.outputFolder)
+                  .filter((file) => file.endsWith(`.GBK`));
 
-            const backupFileObject = backupFileObjects.find(
-              (obj) => obj.name === fileNameWithoutExtension
-            );
-            if (backupFileObject) {
-              const { id } = backupFileObject;
-              api
-                .post("finishbackup", { id, status: "fail" })
-                .catch((err) => console.log(err));
-            } else {
-              console.error(
-                `Backup file object not found for database: ${fileNameWithoutExtension}`
-              );
-              // throw new Error(`Backup file object not found for database: ${dbName}`);
-            }
-          },
-        });
+                await this.sendService.execute({
+                  fileNames: files,
+                  onSuccess: async () => {
+                    await api
+                      .post("finishSending", {
+                        id: e.id,
+                        status: "success",
+                      })
+                      .catch(() => {});
+                  },
+                  onProgress: async () => {
+                    //entity: atualiza o processo
+                    //database: atualza o processo
+                  },
+                  onFail: async () => {
+                    await api
+                      .post("finishSending", {
+                        id: e.id,
+                        status: "fail",
+                      })
+                      .catch(() => {});
+                  },
+                });
 
-        if (this.settings.sendFile) {
-          await Promise.all(
-            backupFileObjects.map((e) =>
-              api
-                .post("startSending", { id: e.id })
-                .catch((err) => console.log(err))
-            )
-          );
-
-          const files = fs
-            .readdirSync(this.settings.outputFolder)
-            .filter((file) => file.endsWith(`.GBK`));
-
-          await this.sendService.execute({
-            fileNames: files,
-            onSuccess: async (dbName) => {
-              const fileNameWithoutDate = dbName
-                .split("_")
-                .slice(0, -3)
-                .join("_");
-
-              const backupFileObject = backupFileObjects.find(
-                (obj) => obj.name === fileNameWithoutDate
-              );
-              if (backupFileObject) {
-                const { id } = backupFileObject;
-                api
-                  .post("finishSending", { id, status: "success" })
-                  .catch((err) => console.log(err));
-              } else {
-                console.error(
-                  `Backup file object not found for database: ${fileNameWithoutDate}`
-                );
-                // throw new Error(`Backup file object not found for database: ${dbName}`);
+                await api
+                  .post("finishProccess", {
+                    id: e.id,
+                  })
+                  .catch(() => {});
               }
-            },
-            onProgress: async () => {
-              //entity: atualiza o processo
-              //database: atualza o processo
-            },
-            onFail: async (dbName) => {
-              const fileNameWithoutDate = dbName
-                .split("_")
-                .slice(0, -3)
-                .join("_");
-
-              const backupFileObject = backupFileObjects.find(
-                (obj) => obj.name === fileNameWithoutDate
-              );
-              if (backupFileObject) {
-                const { id } = backupFileObject;
-                api
-                  .post("finishSending", { id, status: "fail" })
-                  .catch((err) => console.log(err));
-              } else {
-                console.error(
-                  `Backup file object not found for database: ${fileNameWithoutDate}`
-                );
-                // throw new Error(`Backup file object not found for database: ${dbName}`);
-              }
-            },
-          });
-        }
-
-        await Promise.all(
-          backupFileObjects.map((e) =>
-            api
-              .post("finishProccess", {
-                id: e.id,
-              })
-              .catch((err) => console.log(err))
-          )
+            } catch (error) {
+              console.error(`Error processing ID: ${e.id}`, error);
+            }
+          })
         );
       });
       console.log("Cron job scheduled successfully.");
