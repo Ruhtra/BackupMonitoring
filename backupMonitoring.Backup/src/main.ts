@@ -25,7 +25,7 @@ interface SettingsConfig {
 }
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/webhook/",
+  baseURL: "http://n3solucoes.zapto.org:7405/webhook/",
   timeout: 1000,
   headers: { "Content-Type": "application/json" },
 });
@@ -89,7 +89,7 @@ export class BackupUseCase implements IUseCase<void, void> {
     const timeString = `${hours}h ${minutes}m ${seconds}s`;
     console.log("configured to " + timeString);
 
-    async function generateId(name: string): Promise<string> {
+    async function generateId(name: string): Promise<string | undefined> {
       const { data } = await api.post<{ id: string }>("create", {
         dbName: name,
       });
@@ -102,7 +102,7 @@ export class BackupUseCase implements IUseCase<void, void> {
     try {
       this.cronTask = cron.schedule(this.settings.backupCron, async () => {
         const backupFileObjects = await Promise.all(
-          this.settings.backupFiles.map(async (file, index) => ({
+          this.settings.backupFiles.map(async (file) => ({
             id: await generateId(path.basename(file, path.extname(file))),
             name: path.basename(file, path.extname(file)),
           }))
