@@ -78,15 +78,15 @@ const initializeSettings = () => {
 };
 
 function createWindow() {
-  console.log("create window");
-
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path.join(process.env.VITE_PUBLIC, "icon.png"),
+
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
+
     width: 400,
     height: 600,
     show: false,
@@ -176,9 +176,7 @@ function createWindow() {
   }
 
   //Carrega na bandeja do windows
-  const tray = new Tray(
-    path.join(process.env.VITE_PUBLIC, "electron-vite.png")
-  );
+  const tray = new Tray(path.join(process.env.VITE_PUBLIC, "icon.png"));
   const contextMenu = Menu.buildFromTemplate([
     {
       label: "Abrir configurações",
