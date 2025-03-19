@@ -1,13 +1,13 @@
 import { IUseCase } from "backupmonitoring.shared/src/Interfaces/IUseCase";
 import cron, { ScheduledTask } from "node-cron"; // Import ScheduledTask para manipular o cron agendado
 // import path from "path";
-import fs from "fs";
 import { IBackupService } from "./services/IBackupFirebirdService";
 import { BackupFirebirdService } from "./services/BackupFirebirdService";
 import { ISendService } from "./services/ISendService";
 import { SendSftpService } from "./services/SendSftpService";
 import axios from "axios";
 import path from "path";
+import { getLatestFileByPrefix } from "./utils";
 
 interface SettingsConfig {
   backupFiles: string[];
@@ -138,12 +138,14 @@ export class BackupUseCase implements IUseCase<void, void> {
               if (this.settings.sendFile) {
                 await api.post("startSending", { id: e.id }).catch(() => {});
 
-                const files = fs
-                  .readdirSync(this.settings.outputFolder)
-                  .filter((file) => file.endsWith(`.GBK`));
+                const file = getLatestFileByPrefix(
+                  e.name,
+                  this.settings.outputFolder
+                );
+                if (!file) throw new Error("File not found");
 
                 await this.sendService.execute({
-                  fileNames: files,
+                  fileNames: [file],
                   onSuccess: async () => {
                     await api
                       .post("finishSending", {
